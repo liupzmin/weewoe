@@ -3,7 +3,7 @@ package log
 import (
 	"io"
 
-	"github.com/liupzmin/weewoe/pkg/log/rotate"
+	"github.com/liupzmin/weewoe/log/rotate"
 )
 
 func newRotate(config *Config) io.Writer {

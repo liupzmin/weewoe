@@ -1,7 +1,10 @@
 package ssh
 
 import (
+	"errors"
 	"testing"
+
+	ssh2 "golang.org/x/crypto/ssh"
 )
 
 func TestNewConnection(t *testing.T) {
@@ -17,9 +20,14 @@ func TestConnection_SingleRun(t *testing.T) {
 	if err != nil {
 		t.Errorf("new connnection error: %v", err)
 	}
-	out, err := conn.SingleRun("date")
+	out, err := conn.SingleRun("cat /proc/9527/stat")
 	if err != nil {
-		t.Errorf("single run failed: %s", err)
+		var exit *ssh2.ExitError
+		if errors.As(err, &exit) {
+			t.Logf("exit err: %s", err.Error())
+		} else {
+			t.Errorf("single run failed: %s", err)
+		}
 	}
 	t.Logf("single run output: %s", out)
 	_ = conn.Close()

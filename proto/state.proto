@@ -1,0 +1,45 @@
+syntax = "proto3";
+package state;
+
+service State {
+  rpc DrainProcessState(stream Command) returns (stream ProcessCollection) {}
+  rpc DrainPortState(stream Command) returns (stream ProcessCollection) {}
+}
+message Command{
+  int64 ID  = 1; // 0 取缓存数据 1 收集最新数据
+}
+
+message ProcessCollection{
+  repeated ProcessState List=1;
+}
+
+message PortCollection{
+  repeated PortState List=1;
+}
+
+message Process {
+  string          Name      = 1;
+  string          Host      = 2;
+  string          Path      = 3;
+  repeated string Ports     = 4;
+  string          PIDFile   = 5;
+  string          Group     = 6;
+}
+
+message ProcessState  {
+  Process         Base      = 1;
+  int64           State     = 2;
+  int64           StartTime = 3;
+  int64           Timestamp = 4;
+}
+
+message PortState  {
+  Process         Base      = 1;
+  repeated Port   States    = 2;
+  int64           Timestamp = 3;
+}
+
+message Port {
+  string Number = 1;
+  int64  State  = 2;
+}

@@ -8,7 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/liupzmin/weewoe/pkg/util/xcolor"
+	"github.com/liupzmin/weewoe/util/xcolor"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

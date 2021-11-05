@@ -3,7 +3,7 @@ package rotate_test
 import (
 	"log"
 
-	"github.com/liupzmin/weewoe/pkg/log/rotate"
+	"github.com/liupzmin/weewoe/log/rotate"
 )
 
 // To use rotate with the standard library's log package, just pass it into

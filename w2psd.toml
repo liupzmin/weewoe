@@ -1,0 +1,33 @@
+[mail]
+send = true
+cron = ""
+user = "liupeng@auto-fis.com"
+passwd = ""
+to = ""
+
+[[data.processes]]
+host = "192.168.0.127"
+[[data.processes.process]]
+name = "A"
+path = ""
+pidfile = "/a/b/c/com.pid"
+ports = [22, 21]
+group = "hfp"
+flag = ""
+[[data.processes.process]]
+name = "B"
+path = ""
+pidfile = ""
+ports = [22, 21]
+group = "ph"
+flag = ""
+
+[[data.processes]]
+host = "192.168.1.41"
+[[data.processes.process]]
+name = "C"
+path = ""
+pidfile = ""
+ports = [22, 21]
+group = ""
+flag = ""

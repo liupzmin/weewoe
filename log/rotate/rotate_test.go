@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/liupzmin/weewoe/pkg/log/rotate"
+	"github.com/liupzmin/weewoe/log/rotate"
 )
 
 // Example of how to rotate in response to SIGHUP.

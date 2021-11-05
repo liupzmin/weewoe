@@ -12,6 +12,7 @@ import (
 var defaultLogger = NewLogger(&Config{
 	EnableConsole:    true,
 	EnableTimeLayout: true,
+	Level:            "debug",
 })
 
 func SetLogger(logger *Logger) {
