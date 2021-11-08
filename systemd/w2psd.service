@@ -1,0 +1,15 @@
+[Unit]
+Description=WeeWoe PS
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=monitor
+Group=monitor
+ExecStart=/usr/local/bin/w2psd
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

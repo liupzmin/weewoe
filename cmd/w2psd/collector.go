@@ -1,6 +1,7 @@
 package main
 
 import (
+	"container/list"
 	"sync"
 	"time"
 
@@ -14,23 +15,18 @@ var (
 
 type Collector struct {
 	re     chan struct{}
-	client []chan<- []*ProcessState
+	client *list.List
 	sync.RWMutex
 }
 
 func GetCollector() *Collector {
-	once.Do(func() {
-		collector = &Collector{
-			re: make(chan struct{}),
-		}
-		go collector.Collect()
-	})
 	return collector
 }
 
 func (c *Collector) Collect() {
 	t := time.NewTicker(5 * time.Minute)
-
+	time.Sleep(5 * time.Second)
+	c.collect()
 	for {
 		select {
 		case <-t.C:
@@ -43,14 +39,16 @@ func (c *Collector) Collect() {
 }
 
 func (c *Collector) collect() []*ProcessState {
+	log.Debugf("tick! tick! it's time to collect data")
 	collection := make([]*ProcessState, 0)
 	var (
 		wg  sync.WaitGroup
 		mux sync.Mutex
 	)
 	for _, v := range processInfo.Processes {
-		wg.Add(len(v.Process))
+		wg.Add(1)
 		go func(pc ProcessConfig) {
+			defer wg.Done()
 			imux.RLock()
 			t := instances[pc.Host]
 			imux.RUnlock()
@@ -58,6 +56,8 @@ func (c *Collector) collect() []*ProcessState {
 			mux.Lock()
 			defer mux.Unlock()
 			for _, p := range pc.Process {
+				p := p
+				p.Host = pc.Host
 				cmd := NewCommand(t, p)
 				ps, err := cmd.GetProcessStat()
 				if err != nil {
@@ -76,11 +76,13 @@ func (c *Collector) collect() []*ProcessState {
 
 	wg.Wait()
 
+	log.Debug("the new collection ", log.Any("collection", collection))
+
 	go func() {
 		c.RLock()
 		defer c.RUnlock()
-		for _, ch := range c.client {
-			ch <- collection
+		for i := c.client.Front(); i != nil; i = i.Next() {
+			i.Value.(chan []*ProcessState) <- collection
 		}
 	}()
 
@@ -89,7 +91,7 @@ func (c *Collector) collect() []*ProcessState {
 	return nil
 }
 
-func (c *Collector) FetchFromCache() []ProcessState {
+func (c *Collector) FetchFromCache() []*ProcessState {
 	return sc.Fetch()
 }
 
@@ -100,5 +102,26 @@ func (c *Collector) ReCollect() {
 func (c *Collector) RegisterChan(ch chan<- []*ProcessState) {
 	c.Lock()
 	defer c.Unlock()
-	c.client = append(c.client, ch)
+	c.client.PushBack(ch)
+}
+
+func (c *Collector) UnRegisterChan(ch chan<- []*ProcessState) {
+	log.Debugf("Unregister channel")
+	c.Lock()
+	defer c.Unlock()
+	for i := c.client.Front(); i != nil; i = i.Next() {
+		if i.Value.(chan<- []*ProcessState) == ch {
+			c.client.Remove(i)
+		}
+	}
+}
+
+func init() {
+	once.Do(func() {
+		collector = &Collector{
+			client: list.New(),
+			re:     make(chan struct{}),
+		}
+		go collector.Collect()
+	})
 }

@@ -4,14 +4,14 @@ import (
 	"net"
 	"sync"
 
-	"google.golang.org/grpc"
-
-	"github.com/fsnotify/fsnotify"
-
 	"github.com/liupzmin/weewoe/log"
 	pb "github.com/liupzmin/weewoe/proto"
 	"github.com/liupzmin/weewoe/ssh"
+
+	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 const (
@@ -38,7 +38,7 @@ var (
 type Process struct {
 	Name    string
 	Path    string
-	Ports   []int
+	Ports   []int64
 	Group   string
 	Host    string
 	PIDFile string
@@ -47,7 +47,7 @@ type Process struct {
 
 type ProcessState struct {
 	Process
-	State         int
+	State         int64
 	StateDescribe string
 	StartTime     int64
 	Timestamp     int64
@@ -73,6 +73,8 @@ func main() {
 	s := grpc.NewServer()
 
 	pb.RegisterStateServer(s, &State{})
+	reflection.Register(s)
+
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("grpc serve failed: %v", err)
 	}
@@ -86,8 +88,10 @@ func initConfig() {
 	viper.AddConfigPath("$HOME/weewoe")
 	err := viper.ReadInConfig()
 	if err != nil {
-		log.Panicf("Fatal error config file: %w \n", err)
+		log.Panicf("Fatal error config file: %s \n", err.Error())
 	}
+
+	log.Infof("read the config file: %s", viper.ConfigFileUsed())
 
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		log.Debugf("Config file changed:", e.Name)
@@ -99,8 +103,6 @@ func initConfig() {
 	viper.WatchConfig()
 
 	loadProcessInfo()
-
-	log.Debugf("the process is : %+v", processInfo)
 }
 
 func loadProcessInfo() {

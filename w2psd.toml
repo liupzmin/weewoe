@@ -8,26 +8,26 @@ to = ""
 [[data.processes]]
 host = "192.168.0.127"
 [[data.processes.process]]
-name = "A"
-path = ""
-pidfile = "/a/b/c/com.pid"
+name = "docker"
+path = "/opt/kube/bin/dockerd"
+pidfile = ""
 ports = [22, 21]
 group = "hfp"
-flag = ""
+flag = "/opt/kube/bin/dockerd"
 [[data.processes.process]]
 name = "B"
 path = ""
 pidfile = ""
 ports = [22, 21]
 group = "ph"
-flag = ""
+flag = "sssssssss"
 
 [[data.processes]]
 host = "192.168.1.41"
 [[data.processes.process]]
-name = "C"
+name = "oracle"
 path = ""
 pidfile = ""
 ports = [22, 21]
-group = ""
-flag = ""
+group = "oracle"
+flag = "pmon"

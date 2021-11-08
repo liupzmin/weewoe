@@ -74,6 +74,7 @@ func NewLogger(config *Config) *Logger {
 	}
 	if config.EnableConsole {
 		config.EncoderConfig.EncodeLevel = DebugEncodeLevel
+		config.EncoderConfig.EncodeCaller = ShortCallerEncoderColor
 	}
 
 	var (
@@ -105,6 +106,11 @@ func NewLogger(config *Config) *Logger {
 func ShortCallerEncoder(caller zapcore.EntryCaller, enc zapcore.PrimitiveArrayEncoder) {
 	// TODO: consider using a byte-oriented API to save an allocation.
 	enc.AppendString(fmt.Sprintf("%-32s", caller.TrimmedPath()))
+}
+
+func ShortCallerEncoderColor(caller zapcore.EntryCaller, enc zapcore.PrimitiveArrayEncoder) {
+	// TODO: consider using a byte-oriented API to save an allocation.
+	enc.AppendString(xcolor.Blue(fmt.Sprintf("%-32s", caller.TrimmedPath())))
 }
 
 func TimeLayoutEncoderColor(t time.Time, enc zapcore.PrimitiveArrayEncoder) {

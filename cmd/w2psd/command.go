@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"strings"
 	"time"
@@ -42,7 +43,7 @@ func (c *Command) GetPID() (string, error) {
 func (c *Command) GetProcessStat() (*ProcessState, error) {
 	bad := &ProcessState{
 		Process:       c.p,
-		State:         0,
+		State:         Bad,
 		StateDescribe: "",
 		StartTime:     0,
 		Timestamp:     time.Now().Unix(),
@@ -118,6 +119,9 @@ func (c *Command) getPIDByFlag(flag string) (string, error) {
 
 	reader := bufio.NewReader(strings.NewReader(output))
 	pid, _, err := reader.ReadLine()
+	if err == io.EOF {
+		return "", err
+	}
 	if err != nil {
 		log.Errorf("read pid line failed: %s", err.Error())
 		return "", err

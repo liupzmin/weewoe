@@ -13,6 +13,8 @@ var defaultLogger = NewLogger(&Config{
 	EnableConsole:    true,
 	EnableTimeLayout: true,
 	Level:            "debug",
+	AddCaller:        true,
+	CallerSkip:       2,
 })
 
 func SetLogger(logger *Logger) {
