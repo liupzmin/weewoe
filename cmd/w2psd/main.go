@@ -53,6 +53,17 @@ type ProcessState struct {
 	Timestamp     int64
 }
 
+type PortState struct {
+	Process
+	States    []*Port
+	Timestamp int64
+}
+
+type Port struct {
+	Number string
+	State  int64
+}
+
 type ProcessConfig struct {
 	Host    string
 	Process []Process

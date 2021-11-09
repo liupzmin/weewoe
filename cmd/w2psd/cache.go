@@ -9,16 +9,27 @@ import (
 var sc = &StateCache{}
 
 type StateCache struct {
-	m atomic.Value
+	m, n atomic.Value
 }
 
-func (s *StateCache) Sync(collection []*ProcessState) {
+func (s *StateCache) SyncPro(collection []*ProcessState) {
 	sc := make([]*ProcessState, len(collection))
 	copy(sc, collection)
 	s.m.Store(sc)
-	log.Debugf("cache sync")
+	log.Debugf("process cache sync")
 }
 
-func (s *StateCache) Fetch() []*ProcessState {
+func (s *StateCache) FetchPro() []*ProcessState {
 	return s.m.Load().([]*ProcessState)
+}
+
+func (s *StateCache) SyncPort(collection []*PortState) {
+	sc := make([]*PortState, len(collection))
+	copy(sc, collection)
+	s.n.Store(sc)
+	log.Debugf("port cache sync")
+}
+
+func (s *StateCache) FetchPort() []*PortState {
+	return s.n.Load().([]*PortState)
 }

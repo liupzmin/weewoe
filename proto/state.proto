@@ -3,7 +3,7 @@ package state;
 
 service State {
   rpc DrainProcessState(stream Command) returns (stream ProcessCollection) {}
-  rpc DrainPortState(stream Command) returns (stream ProcessCollection) {}
+  rpc DrainPortState(stream Command) returns (stream PortCollection) {}
 }
 message Command{
   int64 ID  = 1; // 0 取缓存数据 1 收集最新数据
