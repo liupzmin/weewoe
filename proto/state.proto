@@ -24,6 +24,7 @@ message Process {
   repeated int64  Ports     = 4;
   string          PIDFile   = 5;
   string          Group     = 6;
+  bool            Suspend   = 7;
 }
 
 message ProcessState  {

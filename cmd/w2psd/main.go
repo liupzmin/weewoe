@@ -43,6 +43,7 @@ type Process struct {
 	Host    string
 	PIDFile string
 	Flag    string
+	Suspend bool
 }
 
 type ProcessState struct {
