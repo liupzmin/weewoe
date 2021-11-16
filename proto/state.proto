@@ -4,9 +4,14 @@ package state;
 service State {
   rpc DrainProcessState(stream Command) returns (stream ProcessCollection) {}
   rpc DrainPortState(stream Command) returns (stream PortCollection) {}
+  rpc SendMail(Command) returns (Empty) {}
 }
+
+message Empty {
+}
+
 message Command{
-  int64 ID  = 1; // 0 取缓存数据 1 收集最新数据
+  int64 ID  = 1; // 0 取缓存数据 1 收集最新数据 2 发送邮件
 }
 
 message ProcessCollection{

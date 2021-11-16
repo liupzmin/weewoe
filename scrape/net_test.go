@@ -1,6 +1,8 @@
-package main
+package scrape
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestRawConnect(t *testing.T) {
 	open := RawConnect("127.0.0.1", 22)

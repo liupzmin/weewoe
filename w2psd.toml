@@ -1,10 +1,21 @@
+# the target of alert
+[alert]
+notify = false
+url = "http://172.16.18.200:9093/api/v1/alerts"
+# mail config
 [mail]
-send = true
-cron = ""
-user = "liupeng@auto-fis.com"
+send = false
+cron = "00 7 * * *"
+server = ""
+port = 25
+user = ""
 passwd = ""
 to = ""
 
+[report]
+title = "HFP巡检报告"
+reporter = "高运金融"
+# process config
 [[data.processes]]
 host = "192.168.0.127"
 [[data.processes.process]]

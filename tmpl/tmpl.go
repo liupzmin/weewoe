@@ -1,6 +1,6 @@
-package mail
+package tmpl
 
-var tmpl = `
+var tm = `
 <html>
 <head>
     <title>{{- .Title }}</title>
@@ -15,12 +15,6 @@ var tmpl = `
 
         table.tdiff {
             border-collapse: collapse;
-        }
-
-        table#program {
-            border-left: 1px solid black;
-            border-bottom: 1px solid black;
-            border-right: 1px solid black
         }
 
         th {
@@ -89,12 +83,14 @@ var tmpl = `
 
         td.littletitle {
             text-align: center;
-            background: #cedced;
-            font-family: monospace;
-            font-size: 10pt;
-            font-weight: 600;
-            display: table-cell;
-            vertical-align: inherit;
+    		background: white;
+    		font-family: emoji;
+    		font-size: 12pt;
+    		font-weight: bold;
+    		display: table-cell;
+    		vertical-align: inherit;
+    		border-left: 2px solid skyblue;
+    		color: #909399;
         }
 
         span.green {

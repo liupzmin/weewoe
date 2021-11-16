@@ -1,4 +1,4 @@
-package main
+package scrape
 
 import (
 	"container/list"
@@ -15,7 +15,7 @@ var (
 )
 
 type Collector struct {
-	re              chan struct{}
+	re, done        chan struct{}
 	proCli, portCli *list.List
 	sync.RWMutex
 }
@@ -40,6 +40,9 @@ func (c *Collector) Collect() {
 			log.Debugf("attention! attention! it's time to reload data")
 			go c.collectProcess()
 			go c.collectPort()
+		case <-c.done:
+			log.Debugf("Collector: work down! I'll quit.")
+			return
 		}
 	}
 }
@@ -88,11 +91,12 @@ func (c *Collector) collectProcess() {
 		c.RLock()
 		defer c.RUnlock()
 		for i := c.proCli.Front(); i != nil; i = i.Next() {
-			i.Value.(chan []*ProcessState) <- collection
+			trySendPro(i.Value.(chan<- []*ProcessState), collection)
+			// i.Value.(chan<- []*ProcessState) <- collection
 		}
 	}()
 
-	go sc.SyncPro(collection)
+	go SC.SyncPro(collection)
 }
 
 func (c *Collector) collectPort() {
@@ -137,20 +141,21 @@ func (c *Collector) collectPort() {
 	go func() {
 		c.RLock()
 		defer c.RUnlock()
-		for i := c.proCli.Front(); i != nil; i = i.Next() {
-			i.Value.(chan []*PortState) <- collection
+		for i := c.portCli.Front(); i != nil; i = i.Next() {
+			trySendPort(i.Value.(chan<- []*PortState), collection)
+			//i.Value.(chan<- []*PortState) <- collection
 		}
 	}()
 
-	go sc.SyncPort(collection)
+	go SC.SyncPort(collection)
 }
 
 func (c *Collector) FetchProFromCache() []*ProcessState {
-	return sc.FetchPro()
+	return SC.FetchPro()
 }
 
 func (c *Collector) FetchPortFromCache() []*PortState {
-	return sc.FetchPort()
+	return SC.FetchPort()
 }
 
 func (c *Collector) ReCollect() {
@@ -158,6 +163,7 @@ func (c *Collector) ReCollect() {
 }
 
 func (c *Collector) RegisterProChan(ch chan<- []*ProcessState) {
+	log.Debugf("Register process channel")
 	c.Lock()
 	defer c.Unlock()
 	c.proCli.PushBack(ch)
@@ -170,11 +176,13 @@ func (c *Collector) UnRegisterProChan(ch chan<- []*ProcessState) {
 	for i := c.proCli.Front(); i != nil; i = i.Next() {
 		if i.Value.(chan<- []*ProcessState) == ch {
 			c.proCli.Remove(i)
+			close(ch)
 		}
 	}
 }
 
 func (c *Collector) RegisterPortChan(ch chan<- []*PortState) {
+	log.Debugf("Register port channel")
 	c.Lock()
 	defer c.Unlock()
 	c.portCli.PushBack(ch)
@@ -187,7 +195,38 @@ func (c *Collector) UnRegisterPortChan(ch chan<- []*PortState) {
 	for i := c.portCli.Front(); i != nil; i = i.Next() {
 		if i.Value.(chan<- []*PortState) == ch {
 			c.portCli.Remove(i)
+			close(ch)
 		}
+	}
+}
+
+func (c *Collector) Stop() {
+	c.RLock()
+	defer c.RUnlock()
+	for i := c.proCli.Front(); i != nil; i = i.Next() {
+		close(i.Value.(chan<- []*ProcessState))
+	}
+	for i := c.portCli.Front(); i != nil; i = i.Next() {
+		close(i.Value.(chan<- []*PortState))
+	}
+	c.done <- struct{}{}
+}
+
+func trySendPro(ch chan<- []*ProcessState, data []*ProcessState) bool {
+	select {
+	case ch <- data:
+		return true
+	default:
+		return false
+	}
+}
+
+func trySendPort(ch chan<- []*PortState, data []*PortState) bool {
+	select {
+	case ch <- data:
+		return true
+	default:
+		return false
 	}
 }
 
@@ -205,6 +244,7 @@ func init() {
 			proCli:  list.New(),
 			portCli: list.New(),
 			re:      make(chan struct{}),
+			done:    make(chan struct{}),
 		}
 		go collector.Collect()
 	})

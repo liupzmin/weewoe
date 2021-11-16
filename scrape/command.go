@@ -1,4 +1,4 @@
-package main
+package scrape
 
 import (
 	"bufio"
@@ -129,7 +129,7 @@ func (c *Command) getPIDByFlag(flag string) (string, error) {
 	return string(pid), nil
 }
 
-func getBootTime(conn *ssh.Connection) (int64, error) {
+func GetBootTime(conn *ssh.Connection) (int64, error) {
 	cmd := "cat /proc/stat|grep btime|awk '{print $2}'"
 	output, err := conn.SingleRun(cmd)
 	if err != nil {

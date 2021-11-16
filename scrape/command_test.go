@@ -1,4 +1,4 @@
-package main
+package scrape
 
 import (
 	"testing"
@@ -12,7 +12,7 @@ func TestGetPID(t *testing.T) {
 		t.Errorf("new connnection error: %v", err)
 	}
 
-	bt, err := getBootTime(conn)
+	bt, err := GetBootTime(conn)
 	if err != nil {
 		t.Errorf("get boot time failed: %s", err.Error())
 	}
@@ -35,7 +35,7 @@ func TestCommand_GetProcessStat(t *testing.T) {
 		t.Errorf("new connnection error: %v", err)
 	}
 
-	bt, err := getBootTime(conn)
+	bt, err := GetBootTime(conn)
 	if err != nil {
 		t.Errorf("get boot time failed: %s", err.Error())
 	}

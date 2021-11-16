@@ -1,6 +1,7 @@
-package main
+package scrape
 
 import (
+	"context"
 	"io"
 
 	"github.com/liupzmin/weewoe/log"
@@ -8,15 +9,23 @@ import (
 	pb "github.com/liupzmin/weewoe/proto"
 )
 
+var SendMailCH = make(chan struct{})
+
 type State struct {
 }
 
+func (s *State) SendMail(ctx context.Context, command *pb.Command) (*pb.Empty, error) {
+	if command.ID == 2 {
+		SendMailCH <- struct{}{}
+	}
+	return &pb.Empty{}, nil
+}
+
 func (s *State) DrainProcessState(stream pb.State_DrainProcessStateServer) error {
-	ch := make(chan []*ProcessState)
+	ch := make(chan []*ProcessState, 1)
 	coll := GetCollector()
 	defer func() {
 		coll.UnRegisterProChan(ch)
-		close(ch)
 		log.Debugf("bye bye")
 	}()
 
@@ -52,11 +61,10 @@ func (s *State) DrainProcessState(stream pb.State_DrainProcessStateServer) error
 }
 
 func (s *State) DrainPortState(stream pb.State_DrainPortStateServer) error {
-	ch := make(chan []*PortState)
+	ch := make(chan []*PortState, 1)
 	coll := GetCollector()
 	defer func() {
 		coll.UnRegisterPortChan(ch)
-		close(ch)
 		log.Debugf("bye bye")
 	}()
 
