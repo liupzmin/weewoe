@@ -6,6 +6,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/spf13/viper"
+
 	"github.com/liupzmin/weewoe/log"
 )
 
@@ -25,30 +27,48 @@ func GetCollector() *Collector {
 }
 
 func (c *Collector) Collect() {
-	t := time.NewTicker(5 * time.Minute)
-	time.Sleep(5 * time.Second)
-	go c.collectProcess()
-	go c.collectPort()
+	var wg sync.WaitGroup
+	c.scrape(&wg)
+	interval := viper.GetInt("scrape.interval")
+	if interval == 0 {
+		log.Panicf("the scrape interval can't be zero!")
+	}
+	du := time.Duration(interval)
+	t := time.NewTicker(du * time.Minute)
 	for {
 		select {
 		case <-t.C:
 			log.Debugf("tick! tick! it's time to collect data")
-			go c.collectProcess()
-			go c.collectPort()
+			c.scrape(&wg)
 		case <-c.re:
-			t.Reset(5 * time.Minute)
+			t.Reset(du * time.Minute)
 			log.Debugf("attention! attention! it's time to reload data")
-			go c.collectProcess()
-			go c.collectPort()
+			c.scrape(&wg)
 		case <-c.done:
-			log.Debugf("Collector: work down! I'll quit.")
+			log.Debugf("Collector: work down! I'm quitting.")
+			wg.Wait()
+			for _, v := range instances {
+				_ = v.Close()
+			}
+			c.done <- struct{}{}
 			return
 		}
 	}
 }
 
-func (c *Collector) collectProcess() {
+func (c *Collector) scrape(wg *sync.WaitGroup) {
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		c.collectProcess()
+	}()
+	go func() {
+		defer wg.Done()
+		c.collectPort()
+	}()
+}
 
+func (c *Collector) collectProcess() {
 	collection := make([]*ProcessState, 0)
 	var (
 		wg  sync.WaitGroup
@@ -210,6 +230,7 @@ func (c *Collector) Stop() {
 		close(i.Value.(chan<- []*PortState))
 	}
 	c.done <- struct{}{}
+	<-c.done
 }
 
 func trySendPro(ch chan<- []*ProcessState, data []*ProcessState) bool {
@@ -246,6 +267,5 @@ func init() {
 			re:      make(chan struct{}),
 			done:    make(chan struct{}),
 		}
-		go collector.Collect()
 	})
 }

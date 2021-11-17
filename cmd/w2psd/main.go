@@ -24,37 +24,38 @@ func main() {
 
 	go httpServer()
 
-	lis, err := net.Listen("tcp", ":9527")
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
+	go scrape.GetCollector().Collect()
+
 	s := grpc.NewServer()
-
-	go func() {
-		select {
-		case <-waitSignals():
-			s.Stop()
-			scrape.GetCollector().Stop()
-		}
-	}()
-
 	pb.RegisterStateServer(s, &scrape.State{})
 	reflection.Register(s)
 
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("grpc serve failed: %v", err)
+	go func() {
+		lis, err := net.Listen("tcp", ":9527")
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
+		if err := s.Serve(lis); err != nil {
+			log.Fatalf("grpc serve failed: %v", err)
+		}
+	}()
+
+	select {
+	case <-waitSignals():
+		s.Stop()
+		scrape.GetCollector().Stop()
 	}
 }
 
 func cronSendMail() {
+	m := mail.New()
+
+	go func() {
+		<-scrape.SendMailCH
+		m.Run()
+	}()
+
 	if viper.GetBool("mail.send") {
-		m := mail.New()
-
-		go func() {
-			<-scrape.SendMailCH
-			m.Run()
-		}()
-
 		c := cron.New()
 		_, err := c.AddJob(viper.GetString("mail.cron"), m)
 		if err != nil {

@@ -33,7 +33,7 @@ func (s *State) DrainProcessState(stream pb.State_DrainProcessStateServer) error
 	go func() {
 		coll.RegisterProChan(ch)
 		for data := range ch {
-			if err := stream.Send(s.buildProcessData(data)); err != nil {
+			if err := stream.Send(encodeProcessData(data)); err != nil {
 				log.Errorf("stream send error: %s", err.Error())
 			}
 		}
@@ -50,7 +50,7 @@ func (s *State) DrainProcessState(stream pb.State_DrainProcessStateServer) error
 
 		switch in.ID {
 		case UseCache:
-			data := s.buildProcessData(coll.FetchProFromCache())
+			data := encodeProcessData(coll.FetchProFromCache())
 			if err := stream.Send(data); err != nil {
 				return err
 			}
@@ -72,7 +72,7 @@ func (s *State) DrainPortState(stream pb.State_DrainPortStateServer) error {
 	go func() {
 		coll.RegisterPortChan(ch)
 		for data := range ch {
-			if err := stream.Send(s.buildPortData(data)); err != nil {
+			if err := stream.Send(encodePortData(data)); err != nil {
 				log.Errorf("stream send error: %s", err.Error())
 			}
 		}
@@ -89,67 +89,12 @@ func (s *State) DrainPortState(stream pb.State_DrainPortStateServer) error {
 
 		switch in.ID {
 		case UseCache:
-			data := s.buildPortData(coll.FetchPortFromCache())
+			data := encodePortData(coll.FetchPortFromCache())
 			if err := stream.Send(data); err != nil {
 				return err
 			}
 		case Reload:
 			coll.ReCollect()
 		}
-	}
-}
-
-func (s *State) buildProcessData(data []*ProcessState) *pb.ProcessCollection {
-	list := make([]*pb.ProcessState, 0)
-	for _, v := range data {
-		ps := &pb.ProcessState{
-			Base: &pb.Process{
-				Name:    v.Name,
-				Host:    v.Host,
-				Path:    v.Path,
-				Ports:   v.Ports,
-				PIDFile: v.PIDFile,
-				Group:   v.Group,
-				Suspend: v.Suspend,
-			},
-			State:     v.State,
-			StartTime: v.StartTime,
-			Timestamp: v.Timestamp,
-		}
-		list = append(list, ps)
-	}
-	return &pb.ProcessCollection{
-		List: list,
-	}
-}
-
-func (s *State) buildPortData(data []*PortState) *pb.PortCollection {
-	list := make([]*pb.PortState, 0)
-	for _, v := range data {
-		ss := make([]*pb.Port, 0)
-		for _, p := range v.States {
-			port := &pb.Port{
-				Number: p.Number,
-				State:  p.State,
-			}
-			ss = append(ss, port)
-		}
-		ps := &pb.PortState{
-			Base: &pb.Process{
-				Name:    v.Name,
-				Host:    v.Host,
-				Path:    v.Path,
-				Ports:   v.Ports,
-				PIDFile: v.PIDFile,
-				Group:   v.Group,
-				Suspend: v.Suspend,
-			},
-			States:    ss,
-			Timestamp: v.Timestamp,
-		}
-		list = append(list, ps)
-	}
-	return &pb.PortCollection{
-		List: list,
 	}
 }

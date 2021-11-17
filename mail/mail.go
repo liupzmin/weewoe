@@ -37,22 +37,21 @@ func New() Mail {
 
 func (m Mail) Run() {
 	m.knock()
-	m.Send()
-}
-
-func (m Mail) Send() {
 	r := new(tmpl.Report)
 	output, err := r.Render()
 	if err != nil {
 		return
 	}
+	m.Send(r.Title, output)
+}
 
+func (m Mail) Send(title, content string) {
 	gm := gomail.NewMessage()
 
 	gm.SetHeader("From", m.From)
 	gm.SetHeader("To", m.To...)
-	gm.SetHeader("Subject", r.Title)
-	gm.SetBody("text/html", output)
+	gm.SetHeader("Subject", title)
+	gm.SetBody("text/html", content)
 
 	auth := LoginAuth(m.From, m.Passwd)
 	d := gomail.NewDialer(m.SMTPHost, m.SMTPPort, m.From, m.Passwd)

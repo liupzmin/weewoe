@@ -26,6 +26,10 @@ type Target struct {
 	BootTime int64
 }
 
+func (t Target) Close() error {
+	return t.Conn.Close()
+}
+
 var (
 	instances   map[string]Target
 	processInfo Config
