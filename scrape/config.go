@@ -79,6 +79,7 @@ type Config struct {
 func Init() {
 	initConfig()
 	initConnection(processInfo)
+	takeOff()
 }
 
 func initConfig() {
@@ -104,7 +105,6 @@ func initConfig() {
 		defer pmux.Unlock()
 		loadProcessInfo()
 		initConnection(processInfo)
-		collector.ReCollect()
 	})
 	viper.WatchConfig()
 

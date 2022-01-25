@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"net/smtp"
-	"sync"
 
 	"github.com/liupzmin/weewoe/tmpl"
 
@@ -17,6 +16,7 @@ import (
 )
 
 type Mail struct {
+	scrape.Collector
 	From     string
 	Passwd   string
 	To       []string
@@ -24,28 +24,32 @@ type Mail struct {
 	SMTPPort int
 }
 
-func New() Mail {
+func New() *Mail {
 	m := Mail{
-		From:     viper.GetString("mail.user"),
-		Passwd:   viper.GetString("mail.passwd"),
-		To:       viper.GetStringSlice("mail.to"),
-		SMTPHost: viper.GetString("mail.server"),
-		SMTPPort: viper.GetInt("mail.port"),
+		Collector: scrape.CollectorMap["process"],
+		From:      viper.GetString("mail.user"),
+		Passwd:    viper.GetString("mail.passwd"),
+		To:        viper.GetStringSlice("mail.to"),
+		SMTPHost:  viper.GetString("mail.server"),
+		SMTPPort:  viper.GetInt("mail.port"),
 	}
-	return m
+	return &m
 }
 
-func (m Mail) Run() {
-	m.knock()
+func (m *Mail) Run() {
+	rows := m.Peek()
+	var ns scrape.NameSpace
+	ns.Erect(rows)
+
 	r := new(tmpl.Report)
-	output, err := r.Render()
+	output, err := r.Render(ns.Groups())
 	if err != nil {
 		return
 	}
 	m.Send(r.Title, output)
 }
 
-func (m Mail) Send(title, content string) {
+func (m *Mail) Send(title, content string) {
 	gm := gomail.NewMessage()
 
 	gm.SetHeader("From", m.From)
@@ -61,49 +65,6 @@ func (m Mail) Send(title, content string) {
 	if err := d.DialAndSend(gm); err != nil {
 		log.Errorf("DialAndSend err %v:", err)
 	}
-}
-
-// knock 通知 collector 收集进程数据并等待其完成后退出
-func (m Mail) knock() {
-	coll := scrape.GetCollector()
-	pch := make(chan []*scrape.ProcessState, 1)
-	porch := make(chan []*scrape.PortState, 1)
-
-	var (
-		i, j int
-		wg   sync.WaitGroup
-	)
-
-	wg.Add(1)
-	go func() {
-		for p := range pch {
-			_ = p
-			i++
-			if i == 1 {
-				go coll.UnRegisterProChan(pch)
-				wg.Done()
-			}
-		}
-		log.Debugf("pch closed, bye bye")
-	}()
-
-	wg.Add(1)
-	go func() {
-		for p := range porch {
-			_ = p
-			j++
-			if j == 1 {
-				go coll.UnRegisterPortChan(porch)
-				wg.Done()
-			}
-		}
-		log.Debugf("porch closed, bye bye")
-	}()
-
-	coll.RegisterProChan(pch)
-	coll.RegisterPortChan(porch)
-	coll.ReCollect()
-	wg.Wait()
 }
 
 type loginAuth struct {

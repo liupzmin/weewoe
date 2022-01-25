@@ -170,9 +170,9 @@ var (
 )
 
 func TestStateCache_MergeSort(t *testing.T) {
-	SC.SyncPro(ps)
-	SC.SyncPort(ports)
-	data := SC.MergeSort(SC.FetchPro(), SC.FetchPort())
+	GetCache().SyncPro(ps)
+	GetCache().SyncPort(ports)
+	data := GetCache().MergeSort(GetCache().FetchPro(), GetCache().FetchPort())
 	t.Logf("output:%+v", data)
 	t.Logf("output:%+v", expect)
 	if !reflect.DeepEqual(data, expect) {

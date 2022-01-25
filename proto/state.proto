@@ -2,51 +2,22 @@ syntax = "proto3";
 package state;
 
 service State {
-  rpc DrainProcessState(stream Command) returns (stream ProcessCollection) {}
-  rpc DrainPortState(stream Command) returns (stream PortCollection) {}
-  rpc SendMail(Command) returns (Empty) {}
+  rpc Drain(Kind) returns (stream Data) {}
+  rpc SendCommand(Command) returns (Empty) {}
 }
 
 message Empty {
 }
 
 message Command{
-  int64 ID  = 1; // 0 取缓存数据 1 收集最新数据 2 发送邮件
+  string Kind = 1;
+  int64  ID   = 2; // 0 取缓存数据 1 收集最新数据 2 发送邮件
 }
 
-message ProcessCollection{
-  repeated ProcessState List=1;
+message Data {
+  bytes Content  = 1;
 }
 
-message PortCollection{
-  repeated PortState List=1;
-}
-
-message Process {
-  string          Name      = 1;
-  string          Host      = 2;
-  string          Path      = 3;
-  repeated int64  Ports     = 4;
-  string          PIDFile   = 5;
-  string          Group     = 6;
-  bool            Suspend   = 7;
-}
-
-message ProcessState  {
-  Process         Base          = 1;
-  int64           State         = 2;
-  string          StateDescribe = 3;
-  int64           StartTime     = 4;
-  int64           Timestamp     = 5;
-}
-
-message PortState  {
-  Process         Base      = 1;
-  repeated Port   States    = 2;
-  int64           Timestamp = 3;
-}
-
-message Port {
-  string Number = 1;
-  int64  State  = 2;
+message Kind {
+  string Name = 1;
 }

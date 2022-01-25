@@ -5,11 +5,9 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/spf13/viper"
-
-	"github.com/liupzmin/weewoe/scrape"
-
 	"github.com/liupzmin/weewoe/log"
+	"github.com/liupzmin/weewoe/scrape"
+	"github.com/spf13/viper"
 )
 
 type Report struct {
@@ -24,8 +22,8 @@ type Report struct {
 	Groups             []scrape.Group
 }
 
-func (r *Report) Render() (string, error) {
-	r.suck()
+func (r *Report) Render(gps []scrape.Group) (string, error) {
+	r.suck(gps)
 	funcMap := template.FuncMap{
 		"inc": func(i int) int {
 			return i + 1
@@ -53,13 +51,13 @@ func (r *Report) Render() (string, error) {
 	return buf.String(), nil
 }
 
-func (r *Report) suck() {
+func (r *Report) suck(gps []scrape.Group) {
 	r.Title = viper.GetString("report.title")
 	r.ReportName = viper.GetString("report.title")
 	r.ReportDate = time.Now().Format(scrape.TimeLayout)
 	r.Reporter = viper.GetString("report.reporter")
 
-	r.Groups = scrape.SC.MergeSort(scrape.SC.FetchPro(), scrape.SC.FetchPort())
+	r.Groups = gps
 
 	for _, v := range r.Groups {
 		r.NormalCount += v.CountNormal()

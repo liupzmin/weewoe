@@ -56,7 +56,8 @@ func (m *Empty) XXX_DiscardUnknown() {
 var xxx_messageInfo_Empty proto.InternalMessageInfo
 
 type Command struct {
-	ID                   int64    `protobuf:"varint,1,opt,name=ID,proto3" json:"ID,omitempty"`
+	Kind                 string   `protobuf:"bytes,1,opt,name=Kind,proto3" json:"Kind,omitempty"`
+	ID                   int64    `protobuf:"varint,2,opt,name=ID,proto3" json:"ID,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -87,6 +88,13 @@ func (m *Command) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Command proto.InternalMessageInfo
 
+func (m *Command) GetKind() string {
+	if m != nil {
+		return m.Kind
+	}
+	return ""
+}
+
 func (m *Command) GetID() int64 {
 	if m != nil {
 		return m.ID
@@ -94,387 +102,107 @@ func (m *Command) GetID() int64 {
 	return 0
 }
 
-type ProcessCollection struct {
-	List                 []*ProcessState `protobuf:"bytes,1,rep,name=List,proto3" json:"List,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
-	XXX_unrecognized     []byte          `json:"-"`
-	XXX_sizecache        int32           `json:"-"`
-}
-
-func (m *ProcessCollection) Reset()         { *m = ProcessCollection{} }
-func (m *ProcessCollection) String() string { return proto.CompactTextString(m) }
-func (*ProcessCollection) ProtoMessage()    {}
-func (*ProcessCollection) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0493a22f06b3cb67, []int{2}
-}
-
-func (m *ProcessCollection) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ProcessCollection.Unmarshal(m, b)
-}
-func (m *ProcessCollection) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ProcessCollection.Marshal(b, m, deterministic)
-}
-func (m *ProcessCollection) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ProcessCollection.Merge(m, src)
-}
-func (m *ProcessCollection) XXX_Size() int {
-	return xxx_messageInfo_ProcessCollection.Size(m)
-}
-func (m *ProcessCollection) XXX_DiscardUnknown() {
-	xxx_messageInfo_ProcessCollection.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ProcessCollection proto.InternalMessageInfo
-
-func (m *ProcessCollection) GetList() []*ProcessState {
-	if m != nil {
-		return m.List
-	}
-	return nil
-}
-
-type PortCollection struct {
-	List                 []*PortState `protobuf:"bytes,1,rep,name=List,proto3" json:"List,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
-	XXX_unrecognized     []byte       `json:"-"`
-	XXX_sizecache        int32        `json:"-"`
-}
-
-func (m *PortCollection) Reset()         { *m = PortCollection{} }
-func (m *PortCollection) String() string { return proto.CompactTextString(m) }
-func (*PortCollection) ProtoMessage()    {}
-func (*PortCollection) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0493a22f06b3cb67, []int{3}
-}
-
-func (m *PortCollection) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_PortCollection.Unmarshal(m, b)
-}
-func (m *PortCollection) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_PortCollection.Marshal(b, m, deterministic)
-}
-func (m *PortCollection) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PortCollection.Merge(m, src)
-}
-func (m *PortCollection) XXX_Size() int {
-	return xxx_messageInfo_PortCollection.Size(m)
-}
-func (m *PortCollection) XXX_DiscardUnknown() {
-	xxx_messageInfo_PortCollection.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_PortCollection proto.InternalMessageInfo
-
-func (m *PortCollection) GetList() []*PortState {
-	if m != nil {
-		return m.List
-	}
-	return nil
-}
-
-type Process struct {
-	Name                 string   `protobuf:"bytes,1,opt,name=Name,proto3" json:"Name,omitempty"`
-	Host                 string   `protobuf:"bytes,2,opt,name=Host,proto3" json:"Host,omitempty"`
-	Path                 string   `protobuf:"bytes,3,opt,name=Path,proto3" json:"Path,omitempty"`
-	Ports                []int64  `protobuf:"varint,4,rep,packed,name=Ports,proto3" json:"Ports,omitempty"`
-	PIDFile              string   `protobuf:"bytes,5,opt,name=PIDFile,proto3" json:"PIDFile,omitempty"`
-	Group                string   `protobuf:"bytes,6,opt,name=Group,proto3" json:"Group,omitempty"`
-	Suspend              bool     `protobuf:"varint,7,opt,name=Suspend,proto3" json:"Suspend,omitempty"`
+type Data struct {
+	Content              []byte   `protobuf:"bytes,1,opt,name=Content,proto3" json:"Content,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Process) Reset()         { *m = Process{} }
-func (m *Process) String() string { return proto.CompactTextString(m) }
-func (*Process) ProtoMessage()    {}
-func (*Process) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0493a22f06b3cb67, []int{4}
+func (m *Data) Reset()         { *m = Data{} }
+func (m *Data) String() string { return proto.CompactTextString(m) }
+func (*Data) ProtoMessage()    {}
+func (*Data) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0493a22f06b3cb67, []int{2}
 }
 
-func (m *Process) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Process.Unmarshal(m, b)
+func (m *Data) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Data.Unmarshal(m, b)
 }
-func (m *Process) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Process.Marshal(b, m, deterministic)
+func (m *Data) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Data.Marshal(b, m, deterministic)
 }
-func (m *Process) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Process.Merge(m, src)
+func (m *Data) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Data.Merge(m, src)
 }
-func (m *Process) XXX_Size() int {
-	return xxx_messageInfo_Process.Size(m)
+func (m *Data) XXX_Size() int {
+	return xxx_messageInfo_Data.Size(m)
 }
-func (m *Process) XXX_DiscardUnknown() {
-	xxx_messageInfo_Process.DiscardUnknown(m)
+func (m *Data) XXX_DiscardUnknown() {
+	xxx_messageInfo_Data.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Process proto.InternalMessageInfo
+var xxx_messageInfo_Data proto.InternalMessageInfo
 
-func (m *Process) GetName() string {
+func (m *Data) GetContent() []byte {
+	if m != nil {
+		return m.Content
+	}
+	return nil
+}
+
+type Kind struct {
+	Name                 string   `protobuf:"bytes,1,opt,name=Name,proto3" json:"Name,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Kind) Reset()         { *m = Kind{} }
+func (m *Kind) String() string { return proto.CompactTextString(m) }
+func (*Kind) ProtoMessage()    {}
+func (*Kind) Descriptor() ([]byte, []int) {
+	return fileDescriptor_0493a22f06b3cb67, []int{3}
+}
+
+func (m *Kind) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Kind.Unmarshal(m, b)
+}
+func (m *Kind) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Kind.Marshal(b, m, deterministic)
+}
+func (m *Kind) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Kind.Merge(m, src)
+}
+func (m *Kind) XXX_Size() int {
+	return xxx_messageInfo_Kind.Size(m)
+}
+func (m *Kind) XXX_DiscardUnknown() {
+	xxx_messageInfo_Kind.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Kind proto.InternalMessageInfo
+
+func (m *Kind) GetName() string {
 	if m != nil {
 		return m.Name
 	}
 	return ""
 }
 
-func (m *Process) GetHost() string {
-	if m != nil {
-		return m.Host
-	}
-	return ""
-}
-
-func (m *Process) GetPath() string {
-	if m != nil {
-		return m.Path
-	}
-	return ""
-}
-
-func (m *Process) GetPorts() []int64 {
-	if m != nil {
-		return m.Ports
-	}
-	return nil
-}
-
-func (m *Process) GetPIDFile() string {
-	if m != nil {
-		return m.PIDFile
-	}
-	return ""
-}
-
-func (m *Process) GetGroup() string {
-	if m != nil {
-		return m.Group
-	}
-	return ""
-}
-
-func (m *Process) GetSuspend() bool {
-	if m != nil {
-		return m.Suspend
-	}
-	return false
-}
-
-type ProcessState struct {
-	Base                 *Process `protobuf:"bytes,1,opt,name=Base,proto3" json:"Base,omitempty"`
-	State                int64    `protobuf:"varint,2,opt,name=State,proto3" json:"State,omitempty"`
-	StateDescribe        string   `protobuf:"bytes,3,opt,name=StateDescribe,proto3" json:"StateDescribe,omitempty"`
-	StartTime            int64    `protobuf:"varint,4,opt,name=StartTime,proto3" json:"StartTime,omitempty"`
-	Timestamp            int64    `protobuf:"varint,5,opt,name=Timestamp,proto3" json:"Timestamp,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *ProcessState) Reset()         { *m = ProcessState{} }
-func (m *ProcessState) String() string { return proto.CompactTextString(m) }
-func (*ProcessState) ProtoMessage()    {}
-func (*ProcessState) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0493a22f06b3cb67, []int{5}
-}
-
-func (m *ProcessState) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_ProcessState.Unmarshal(m, b)
-}
-func (m *ProcessState) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_ProcessState.Marshal(b, m, deterministic)
-}
-func (m *ProcessState) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ProcessState.Merge(m, src)
-}
-func (m *ProcessState) XXX_Size() int {
-	return xxx_messageInfo_ProcessState.Size(m)
-}
-func (m *ProcessState) XXX_DiscardUnknown() {
-	xxx_messageInfo_ProcessState.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_ProcessState proto.InternalMessageInfo
-
-func (m *ProcessState) GetBase() *Process {
-	if m != nil {
-		return m.Base
-	}
-	return nil
-}
-
-func (m *ProcessState) GetState() int64 {
-	if m != nil {
-		return m.State
-	}
-	return 0
-}
-
-func (m *ProcessState) GetStateDescribe() string {
-	if m != nil {
-		return m.StateDescribe
-	}
-	return ""
-}
-
-func (m *ProcessState) GetStartTime() int64 {
-	if m != nil {
-		return m.StartTime
-	}
-	return 0
-}
-
-func (m *ProcessState) GetTimestamp() int64 {
-	if m != nil {
-		return m.Timestamp
-	}
-	return 0
-}
-
-type PortState struct {
-	Base                 *Process `protobuf:"bytes,1,opt,name=Base,proto3" json:"Base,omitempty"`
-	States               []*Port  `protobuf:"bytes,2,rep,name=States,proto3" json:"States,omitempty"`
-	Timestamp            int64    `protobuf:"varint,3,opt,name=Timestamp,proto3" json:"Timestamp,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *PortState) Reset()         { *m = PortState{} }
-func (m *PortState) String() string { return proto.CompactTextString(m) }
-func (*PortState) ProtoMessage()    {}
-func (*PortState) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0493a22f06b3cb67, []int{6}
-}
-
-func (m *PortState) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_PortState.Unmarshal(m, b)
-}
-func (m *PortState) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_PortState.Marshal(b, m, deterministic)
-}
-func (m *PortState) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PortState.Merge(m, src)
-}
-func (m *PortState) XXX_Size() int {
-	return xxx_messageInfo_PortState.Size(m)
-}
-func (m *PortState) XXX_DiscardUnknown() {
-	xxx_messageInfo_PortState.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_PortState proto.InternalMessageInfo
-
-func (m *PortState) GetBase() *Process {
-	if m != nil {
-		return m.Base
-	}
-	return nil
-}
-
-func (m *PortState) GetStates() []*Port {
-	if m != nil {
-		return m.States
-	}
-	return nil
-}
-
-func (m *PortState) GetTimestamp() int64 {
-	if m != nil {
-		return m.Timestamp
-	}
-	return 0
-}
-
-type Port struct {
-	Number               string   `protobuf:"bytes,1,opt,name=Number,proto3" json:"Number,omitempty"`
-	State                int64    `protobuf:"varint,2,opt,name=State,proto3" json:"State,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *Port) Reset()         { *m = Port{} }
-func (m *Port) String() string { return proto.CompactTextString(m) }
-func (*Port) ProtoMessage()    {}
-func (*Port) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0493a22f06b3cb67, []int{7}
-}
-
-func (m *Port) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Port.Unmarshal(m, b)
-}
-func (m *Port) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Port.Marshal(b, m, deterministic)
-}
-func (m *Port) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Port.Merge(m, src)
-}
-func (m *Port) XXX_Size() int {
-	return xxx_messageInfo_Port.Size(m)
-}
-func (m *Port) XXX_DiscardUnknown() {
-	xxx_messageInfo_Port.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_Port proto.InternalMessageInfo
-
-func (m *Port) GetNumber() string {
-	if m != nil {
-		return m.Number
-	}
-	return ""
-}
-
-func (m *Port) GetState() int64 {
-	if m != nil {
-		return m.State
-	}
-	return 0
-}
-
 func init() {
 	proto.RegisterType((*Empty)(nil), "state.Empty")
 	proto.RegisterType((*Command)(nil), "state.Command")
-	proto.RegisterType((*ProcessCollection)(nil), "state.ProcessCollection")
-	proto.RegisterType((*PortCollection)(nil), "state.PortCollection")
-	proto.RegisterType((*Process)(nil), "state.Process")
-	proto.RegisterType((*ProcessState)(nil), "state.ProcessState")
-	proto.RegisterType((*PortState)(nil), "state.PortState")
-	proto.RegisterType((*Port)(nil), "state.Port")
+	proto.RegisterType((*Data)(nil), "state.Data")
+	proto.RegisterType((*Kind)(nil), "state.Kind")
 }
 
 func init() { proto.RegisterFile("proto/state.proto", fileDescriptor_0493a22f06b3cb67) }
 
 var fileDescriptor_0493a22f06b3cb67 = []byte{
-	// 439 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x53, 0xcb, 0x8e, 0xd3, 0x30,
-	0x14, 0x1d, 0x37, 0x69, 0x33, 0xbd, 0x1d, 0x2a, 0x6a, 0x1e, 0x32, 0x88, 0x45, 0x65, 0x46, 0x22,
-	0x62, 0x31, 0xa0, 0x82, 0x58, 0xc1, 0x86, 0x86, 0x47, 0x25, 0x18, 0x55, 0x2e, 0x3f, 0xe0, 0xb6,
-	0x96, 0x88, 0xd4, 0xc4, 0x91, 0xed, 0x2e, 0xf8, 0x20, 0x36, 0xfc, 0x00, 0xbf, 0x87, 0x7c, 0xed,
-	0x4e, 0x93, 0x29, 0x8b, 0x59, 0xe5, 0x9e, 0xe3, 0x73, 0xae, 0xef, 0x23, 0x86, 0x49, 0x63, 0xb4,
-	0xd3, 0xaf, 0xac, 0x93, 0x4e, 0x5d, 0x61, 0x4c, 0xfb, 0x08, 0x78, 0x06, 0xfd, 0x4f, 0x55, 0xe3,
-	0x7e, 0xf1, 0x27, 0x90, 0xcd, 0x75, 0x55, 0xc9, 0x7a, 0x4b, 0xc7, 0xd0, 0x5b, 0x14, 0x8c, 0x4c,
-	0x49, 0x9e, 0x88, 0xde, 0xa2, 0xe0, 0xef, 0x61, 0xb2, 0x34, 0x7a, 0xa3, 0xac, 0x9d, 0xeb, 0xdd,
-	0x4e, 0x6d, 0x5c, 0xa9, 0x6b, 0xfa, 0x02, 0xd2, 0x6f, 0xa5, 0x75, 0x8c, 0x4c, 0x93, 0x7c, 0x34,
-	0x7b, 0x70, 0x15, 0x72, 0x47, 0xdd, 0xca, 0x03, 0x81, 0x02, 0xfe, 0x0e, 0xc6, 0x4b, 0x6d, 0x5c,
-	0xcb, 0x7a, 0xd9, 0xb1, 0xde, 0x3f, 0x58, 0xb5, 0x71, 0x6d, 0xdf, 0x6f, 0x02, 0x59, 0x4c, 0x47,
-	0x29, 0xa4, 0xd7, 0xb2, 0x52, 0x58, 0xd3, 0x50, 0x60, 0xec, 0xb9, 0xaf, 0xda, 0x3a, 0xd6, 0x0b,
-	0x9c, 0x8f, 0x3d, 0xb7, 0x94, 0xee, 0x27, 0x4b, 0x02, 0xe7, 0x63, 0xfa, 0x10, 0xfa, 0x3e, 0xb5,
-	0x65, 0xe9, 0x34, 0xc9, 0x13, 0x11, 0x00, 0x65, 0x90, 0x2d, 0x17, 0xc5, 0xe7, 0x72, 0xa7, 0x58,
-	0x1f, 0xc5, 0x07, 0xe8, 0xf5, 0x5f, 0x8c, 0xde, 0x37, 0x6c, 0x80, 0x7c, 0x00, 0x5e, 0xbf, 0xda,
-	0xdb, 0x46, 0xd5, 0x5b, 0x96, 0x4d, 0x49, 0x7e, 0x2e, 0x0e, 0x90, 0xff, 0x21, 0x70, 0xd1, 0x6e,
-	0x9b, 0x72, 0x48, 0x3f, 0x4a, 0x1b, 0x8a, 0x1d, 0xcd, 0xc6, 0xdd, 0xc9, 0x08, 0x3c, 0xf3, 0x97,
-	0xa0, 0x18, 0xab, 0x4f, 0x44, 0x00, 0xf4, 0x12, 0xee, 0x61, 0x50, 0x28, 0xbb, 0x31, 0xe5, 0x5a,
-	0xc5, 0x3e, 0xba, 0x24, 0x7d, 0x06, 0xc3, 0x95, 0x93, 0xc6, 0xfd, 0x28, 0x2b, 0xc5, 0x52, 0xf4,
-	0x1f, 0x09, 0x7f, 0xea, 0xbf, 0xd6, 0xc9, 0xaa, 0xc1, 0xd6, 0x12, 0x71, 0x24, 0xb8, 0x81, 0xe1,
-	0xcd, 0x9c, 0xef, 0x54, 0xe8, 0x73, 0x18, 0xa0, 0xd8, 0xb2, 0x1e, 0x6e, 0x6b, 0xd4, 0xda, 0x96,
-	0x88, 0x47, 0xdd, 0x3b, 0x93, 0xdb, 0x77, 0xbe, 0x85, 0xd4, 0xab, 0xe9, 0x63, 0x18, 0x5c, 0xef,
-	0xab, 0xb5, 0x32, 0x71, 0x8d, 0x11, 0xfd, 0x7f, 0x16, 0xb3, 0xbf, 0x24, 0xd2, 0x74, 0x0e, 0x93,
-	0xc2, 0xc8, 0xb2, 0xee, 0x0c, 0xf9, 0x50, 0x6d, 0xfc, 0x67, 0x9f, 0xb2, 0x6e, 0xf5, 0xc7, 0xbf,
-	0x8d, 0x9f, 0xe5, 0xe4, 0x35, 0xa1, 0x1f, 0x60, 0x1c, 0x92, 0xdc, 0x74, 0x7f, 0x3b, 0xc3, 0xa3,
-	0x56, 0x67, 0x27, 0xf6, 0x97, 0x70, 0xbe, 0x52, 0xf5, 0xf6, 0xbb, 0x2c, 0x77, 0x27, 0xc6, 0x8b,
-	0x88, 0xc3, 0x3b, 0x3a, 0x5b, 0x0f, 0xf0, 0x81, 0xbd, 0xf9, 0x17, 0x00, 0x00, 0xff, 0xff, 0x35,
-	0x1d, 0xf0, 0xdf, 0x75, 0x03, 0x00, 0x00,
+	// 190 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x34, 0x8f, 0xbd, 0x0e, 0x82, 0x30,
+	0x14, 0x85, 0x29, 0x52, 0x89, 0x17, 0x42, 0xe2, 0x9d, 0x08, 0x13, 0x69, 0x62, 0xc2, 0x02, 0x1a,
+	0x7d, 0x04, 0xeb, 0x40, 0x4c, 0x1c, 0x60, 0x76, 0xa8, 0xa1, 0x03, 0x43, 0x0b, 0xc1, 0x2e, 0xbe,
+	0xbd, 0x69, 0xa1, 0xdb, 0xf9, 0xd2, 0xde, 0xf3, 0x03, 0xc7, 0x79, 0x99, 0xcc, 0x74, 0xfe, 0x1a,
+	0x61, 0x64, 0xe3, 0x34, 0x52, 0x07, 0x2c, 0x06, 0xfa, 0x50, 0xb3, 0xf9, 0xb1, 0x1a, 0xe2, 0xfb,
+	0xa4, 0x94, 0xd0, 0x03, 0x22, 0x44, 0xcf, 0x51, 0x0f, 0x39, 0x29, 0x49, 0x75, 0xe8, 0x9c, 0xc6,
+	0x0c, 0xc2, 0x96, 0xe7, 0x61, 0x49, 0xaa, 0x5d, 0x17, 0xb6, 0x9c, 0x95, 0x10, 0x71, 0x61, 0x04,
+	0xe6, 0xf6, 0x4c, 0x1b, 0xa9, 0x8d, 0xfb, 0x9e, 0x76, 0x1e, 0x59, 0xb1, 0xba, 0x58, 0xb7, 0x97,
+	0x50, 0xd2, 0xbb, 0x59, 0x7d, 0x7d, 0x03, 0xed, 0x6d, 0x3c, 0x9e, 0x80, 0xf2, 0x45, 0x8c, 0x1a,
+	0x93, 0x66, 0x2d, 0x67, 0x4f, 0x0a, 0x0f, 0x36, 0x81, 0x05, 0x17, 0x82, 0x35, 0x24, 0xbd, 0xd4,
+	0x83, 0x2f, 0x98, 0x6d, 0xef, 0x1b, 0x17, 0xe9, 0xc6, 0xeb, 0x92, 0xe0, 0xb3, 0x77, 0x13, 0x6f,
+	0xff, 0x00, 0x00, 0x00, 0xff, 0xff, 0x2a, 0x20, 0xc6, 0x7a, 0xf7, 0x00, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -489,9 +217,8 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type StateClient interface {
-	DrainProcessState(ctx context.Context, opts ...grpc.CallOption) (State_DrainProcessStateClient, error)
-	DrainPortState(ctx context.Context, opts ...grpc.CallOption) (State_DrainPortStateClient, error)
-	SendMail(ctx context.Context, in *Command, opts ...grpc.CallOption) (*Empty, error)
+	Drain(ctx context.Context, in *Kind, opts ...grpc.CallOption) (State_DrainClient, error)
+	SendCommand(ctx context.Context, in *Command, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type stateClient struct {
@@ -502,71 +229,41 @@ func NewStateClient(cc *grpc.ClientConn) StateClient {
 	return &stateClient{cc}
 }
 
-func (c *stateClient) DrainProcessState(ctx context.Context, opts ...grpc.CallOption) (State_DrainProcessStateClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_State_serviceDesc.Streams[0], "/state.State/DrainProcessState", opts...)
+func (c *stateClient) Drain(ctx context.Context, in *Kind, opts ...grpc.CallOption) (State_DrainClient, error) {
+	stream, err := c.cc.NewStream(ctx, &_State_serviceDesc.Streams[0], "/state.State/Drain", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &stateDrainProcessStateClient{stream}
+	x := &stateDrainClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
 	return x, nil
 }
 
-type State_DrainProcessStateClient interface {
-	Send(*Command) error
-	Recv() (*ProcessCollection, error)
+type State_DrainClient interface {
+	Recv() (*Data, error)
 	grpc.ClientStream
 }
 
-type stateDrainProcessStateClient struct {
+type stateDrainClient struct {
 	grpc.ClientStream
 }
 
-func (x *stateDrainProcessStateClient) Send(m *Command) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *stateDrainProcessStateClient) Recv() (*ProcessCollection, error) {
-	m := new(ProcessCollection)
+func (x *stateDrainClient) Recv() (*Data, error) {
+	m := new(Data)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
 }
 
-func (c *stateClient) DrainPortState(ctx context.Context, opts ...grpc.CallOption) (State_DrainPortStateClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_State_serviceDesc.Streams[1], "/state.State/DrainPortState", opts...)
-	if err != nil {
-		return nil, err
-	}
-	x := &stateDrainPortStateClient{stream}
-	return x, nil
-}
-
-type State_DrainPortStateClient interface {
-	Send(*Command) error
-	Recv() (*PortCollection, error)
-	grpc.ClientStream
-}
-
-type stateDrainPortStateClient struct {
-	grpc.ClientStream
-}
-
-func (x *stateDrainPortStateClient) Send(m *Command) error {
-	return x.ClientStream.SendMsg(m)
-}
-
-func (x *stateDrainPortStateClient) Recv() (*PortCollection, error) {
-	m := new(PortCollection)
-	if err := x.ClientStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (c *stateClient) SendMail(ctx context.Context, in *Command, opts ...grpc.CallOption) (*Empty, error) {
+func (c *stateClient) SendCommand(ctx context.Context, in *Command, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
-	err := c.cc.Invoke(ctx, "/state.State/SendMail", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/state.State/SendCommand", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -575,95 +272,60 @@ func (c *stateClient) SendMail(ctx context.Context, in *Command, opts ...grpc.Ca
 
 // StateServer is the server API for State service.
 type StateServer interface {
-	DrainProcessState(State_DrainProcessStateServer) error
-	DrainPortState(State_DrainPortStateServer) error
-	SendMail(context.Context, *Command) (*Empty, error)
+	Drain(*Kind, State_DrainServer) error
+	SendCommand(context.Context, *Command) (*Empty, error)
 }
 
 // UnimplementedStateServer can be embedded to have forward compatible implementations.
 type UnimplementedStateServer struct {
 }
 
-func (*UnimplementedStateServer) DrainProcessState(srv State_DrainProcessStateServer) error {
-	return status.Errorf(codes.Unimplemented, "method DrainProcessState not implemented")
+func (*UnimplementedStateServer) Drain(req *Kind, srv State_DrainServer) error {
+	return status.Errorf(codes.Unimplemented, "method Drain not implemented")
 }
-func (*UnimplementedStateServer) DrainPortState(srv State_DrainPortStateServer) error {
-	return status.Errorf(codes.Unimplemented, "method DrainPortState not implemented")
-}
-func (*UnimplementedStateServer) SendMail(ctx context.Context, req *Command) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendMail not implemented")
+func (*UnimplementedStateServer) SendCommand(ctx context.Context, req *Command) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendCommand not implemented")
 }
 
 func RegisterStateServer(s *grpc.Server, srv StateServer) {
 	s.RegisterService(&_State_serviceDesc, srv)
 }
 
-func _State_DrainProcessState_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(StateServer).DrainProcessState(&stateDrainProcessStateServer{stream})
+func _State_Drain_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Kind)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(StateServer).Drain(m, &stateDrainServer{stream})
 }
 
-type State_DrainProcessStateServer interface {
-	Send(*ProcessCollection) error
-	Recv() (*Command, error)
+type State_DrainServer interface {
+	Send(*Data) error
 	grpc.ServerStream
 }
 
-type stateDrainProcessStateServer struct {
+type stateDrainServer struct {
 	grpc.ServerStream
 }
 
-func (x *stateDrainProcessStateServer) Send(m *ProcessCollection) error {
+func (x *stateDrainServer) Send(m *Data) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *stateDrainProcessStateServer) Recv() (*Command, error) {
-	m := new(Command)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func _State_DrainPortState_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(StateServer).DrainPortState(&stateDrainPortStateServer{stream})
-}
-
-type State_DrainPortStateServer interface {
-	Send(*PortCollection) error
-	Recv() (*Command, error)
-	grpc.ServerStream
-}
-
-type stateDrainPortStateServer struct {
-	grpc.ServerStream
-}
-
-func (x *stateDrainPortStateServer) Send(m *PortCollection) error {
-	return x.ServerStream.SendMsg(m)
-}
-
-func (x *stateDrainPortStateServer) Recv() (*Command, error) {
-	m := new(Command)
-	if err := x.ServerStream.RecvMsg(m); err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func _State_SendMail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _State_SendCommand_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Command)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StateServer).SendMail(ctx, in)
+		return srv.(StateServer).SendCommand(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/state.State/SendMail",
+		FullMethod: "/state.State/SendCommand",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StateServer).SendMail(ctx, req.(*Command))
+		return srv.(StateServer).SendCommand(ctx, req.(*Command))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -673,22 +335,15 @@ var _State_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*StateServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SendMail",
-			Handler:    _State_SendMail_Handler,
+			MethodName: "SendCommand",
+			Handler:    _State_SendCommand_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
-			StreamName:    "DrainProcessState",
-			Handler:       _State_DrainProcessState_Handler,
+			StreamName:    "Drain",
+			Handler:       _State_Drain_Handler,
 			ServerStreams: true,
-			ClientStreams: true,
-		},
-		{
-			StreamName:    "DrainPortState",
-			Handler:       _State_DrainPortState_Handler,
-			ServerStreams: true,
-			ClientStreams: true,
 		},
 	},
 	Metadata: "proto/state.proto",

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -24,8 +25,6 @@ func main() {
 
 	go httpServer()
 
-	go scrape.GetCollector().Collect()
-
 	s := grpc.NewServer()
 	pb.RegisterStateServer(s, &scrape.State{})
 	reflection.Register(s)
@@ -42,8 +41,9 @@ func main() {
 
 	select {
 	case <-waitSignals():
-		s.Stop()
-		scrape.GetCollector().Stop()
+		log.Info("SHUTTING DOWN......")
+		scrape.Stop()
+		s.GracefulStop()
 	}
 }
 
@@ -51,7 +51,7 @@ func cronSendMail() {
 	m := mail.New()
 
 	go func() {
-		<-scrape.SendMailCH
+		<-scrape.SendMail
 		m.Run()
 	}()
 
@@ -68,7 +68,7 @@ func cronSendMail() {
 func sendAlert() {
 	if viper.GetBool("alert.notify") {
 		alert := scrape.Alert{URL: viper.GetString("alert.url")}
-		go alert.Notify()
+		scrape.CollectorMap["process"].AddListener(alert)
 	}
 }
 
@@ -80,10 +80,18 @@ func httpServer() {
 }
 
 func processHandler(w http.ResponseWriter, req *http.Request) {
-	r := new(tmpl.Report)
-	output, err := r.Render()
+	p := scrape.CollectorMap["process"]
+	err := p.Start()
 	if err != nil {
-		_, _ = io.WriteString(w, "error happened")
+		_, _ = io.WriteString(w, fmt.Sprintf("peek error happened: %s", err))
+	}
+
+	var ns scrape.NameSpace
+	ns.Erect(p.Peek())
+	r := new(tmpl.Report)
+	output, err := r.Render(ns.Groups())
+	if err != nil {
+		_, _ = io.WriteString(w, fmt.Sprintf("render error happened: %s", err))
 	}
 	_, _ = io.WriteString(w, output)
 }

@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/liupzmin/weewoe/log"
-
 	"github.com/go-resty/resty/v2"
-
-	"github.com/spf13/viper"
+	"github.com/liupzmin/weewoe/internal/render"
+	"github.com/liupzmin/weewoe/log"
 )
 
 type Message struct {
@@ -33,38 +31,40 @@ type Alert struct {
 	URL string
 }
 
-func (a Alert) Notify() {
-	if viper.GetBool("alert.notify") {
-		go func() {
-			for data := range SC.mch {
-				a.ProcessAlert(data)
-			}
-		}()
-
-		for data := range SC.nch {
-			a.PortAlert(data)
-		}
-	}
+func (a Alert) TableDataChanged(rows render.Rows) {
+	var ns NameSpace
+	ns.Erect(rows)
+	a.ProcessAlert(ns.Groups())
+	a.PortAlert(ns.Groups())
 }
 
-func (a Alert) ProcessAlert(data []*ProcessState) {
+func (a Alert) TableLoadFailed(err error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (a Alert) Chan() chan []byte { return nil }
+
+func (a Alert) ProcessAlert(data []Group) {
 	msgs := make([]Message, 0)
 	for _, v := range data {
-		if v.State == Bad && !v.Suspend {
-			msg := Message{
-				Status: "firing",
-				Labels: Labels{
-					AlertName: v.Name,
-					Service:   v.Name,
-					Severity:  "critical",
-					Instance:  v.Host,
-				},
-				Annotations: Annotations{
-					Summary:     "Process Crash",
-					Description: fmt.Sprintf("%s has crashed, please check!", v.Name),
-				},
+		for _, p := range v.Processes {
+			if p.State == Bad && !p.Suspend {
+				msg := Message{
+					Status: "firing",
+					Labels: Labels{
+						AlertName: p.Name,
+						Service:   p.Name,
+						Severity:  "critical",
+						Instance:  p.Host,
+					},
+					Annotations: Annotations{
+						Summary:     "Process Crash",
+						Description: fmt.Sprintf("%s has crashed, please check!", v.Name),
+					},
+				}
+				msgs = append(msgs, msg)
 			}
-			msgs = append(msgs, msg)
 		}
 	}
 	if len(msgs) > 0 {
@@ -72,11 +72,9 @@ func (a Alert) ProcessAlert(data []*ProcessState) {
 	}
 }
 
-func (a Alert) PortAlert(data []*PortState) {
-	pros := SC.FetchPro()
-	groups := SC.MergeSort(pros, data)
+func (a Alert) PortAlert(data []Group) {
 	msgs := make([]Message, 0)
-	for _, g := range groups {
+	for _, g := range data {
 		for _, v := range g.Processes {
 			for _, p := range v.Ports {
 				if v.State == Good && p.State == 0 {
