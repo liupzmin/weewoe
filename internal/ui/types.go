@@ -79,3 +79,7 @@ type Tabular interface {
 	// Delete a resource.
 	Delete(ctx context.Context, path string, cascade, force bool) error
 }
+
+type TableListener interface {
+	TableTick()
+}

@@ -64,6 +64,7 @@ func (b *Browser) Init(ctx context.Context) error {
 	}
 
 	b.CmdBuff().SetSuggestionFn(b.suggestFilter())
+	b.GetTable().Table.AddListener(b)
 
 	return nil
 }
@@ -111,7 +112,6 @@ func (b *Browser) SetInstance(path string) {
 // Start initializes browser updates.
 func (b *Browser) Start() {
 	b.factory = b.factoryFn()
-	b.app.Config.ValidateFavorites()
 	ns := b.app.Config.ActiveNamespace()
 	if n := b.GetModel().GetNamespace(); !client.IsClusterScoped(n) {
 		ns = n
@@ -125,13 +125,14 @@ func (b *Browser) Start() {
 	b.Table.Start()
 	b.CmdBuff().AddListener(b)
 	if err := b.GetModel().Watch(b.prepareContext()); err != nil {
-		b.App().Flash().Err(fmt.Errorf("Watcher failed for %s -- %w", b.GVR(), err))
+		b.App().Flash().Err(fmt.Errorf("Watcher failed for %s -- %w", b.Cat(), err))
 	}
 }
 
 // Stop terminates browser updates.
 func (b *Browser) Stop() {
 	b.stop()
+	b.Table.Table.Stop()
 	b.factory.Terminate()
 }
 
@@ -167,7 +168,7 @@ func (b *Browser) BufferActive(state bool, k model.BufferKind) {
 		return
 	}
 	if err := b.GetModel().Refresh(b.prepareContext()); err != nil {
-		log.Error().Err(err).Msgf("Refresh failed for %s", b.GVR())
+		log.Error().Err(err).Msgf("Refresh failed for %s", b.Cat())
 	}
 	b.app.QueueUpdateDraw(func() {
 		b.Update(b.GetModel().Peek(), b.App().Conn().HasMetrics())
@@ -225,7 +226,8 @@ func (b *Browser) TableDataChanged(data render.TableData) {
 
 	b.app.QueueUpdateDraw(func() {
 		b.refreshActions()
-		b.Update(data, b.app.Conn().HasMetrics())
+		// todo: what is hasMetrics ?
+		b.Update(data, false)
 	})
 }
 
@@ -235,6 +237,10 @@ func (b *Browser) TableLoadFailed(err error) {
 		b.app.Flash().Err(err)
 		b.App().ClearStatus(false)
 	})
+}
+
+func (b *Browser) TableTick() {
+	b.app.QueueUpdateDraw(func() {})
 }
 
 // ----------------------------------------------------------------------------
@@ -347,7 +353,7 @@ func (b *Browser) setNamespace(ns string) {
 
 func (b *Browser) defaultContext() context.Context {
 	ctx := context.WithValue(context.Background(), internal.KeyFactory, b.factory)
-	ctx = context.WithValue(ctx, internal.KeyGVR, b.GVR().String())
+	ctx = context.WithValue(ctx, internal.KeyGVR, b.Cat())
 	if b.Path != "" {
 		ctx = context.WithValue(ctx, internal.KeyPath, b.Path)
 	}

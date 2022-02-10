@@ -9,6 +9,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/duration"
 )
 
+const TimeLayout = "2006-01-02 15:04:05"
+
 // MaxyPad tracks uniform column padding.
 type MaxyPad []int
 
@@ -65,5 +67,15 @@ func toAgeHuman(s string) string {
 		return render.NAValue
 	}
 
+	return duration.HumanDuration(d)
+}
+
+func toAgeHumanFromTimeStamp(t string) string {
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	b, err := time.ParseInLocation(TimeLayout, t, loc)
+	if err != nil {
+		return ""
+	}
+	d := time.Since(b)
 	return duration.HumanDuration(d)
 }

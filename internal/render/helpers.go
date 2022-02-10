@@ -338,3 +338,7 @@ func sortLabels(m map[string]string) (keys, vals []string) {
 
 	return
 }
+
+func timeToAge(timestamp time.Time) string {
+	return time.Since(timestamp).String()
+}

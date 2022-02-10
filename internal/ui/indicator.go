@@ -3,8 +3,9 @@ package ui
 import (
 	"context"
 	"fmt"
-	"github.com/liupzmin/weewoe/internal/model"
 	"time"
+
+	"github.com/liupzmin/weewoe/internal/model"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/liupzmin/tview"
@@ -45,7 +46,7 @@ func (s *StatusIndicator) StylesChanged(styles *config.Styles) {
 	s.SetTextColor(styles.FgColor())
 }
 
-const statusIndicatorFmt = "[orange::b]weewoo [aqua::]%d [white::]%d:%d:%d [lawngreen::]%d"
+const statusIndicatorFmt = "[orange::b]weewoo [aqua::]%d/[lawngreen::]%d"
 
 // ClusterInfoChanged notifies the cluster meta was changed.
 func (s *StatusIndicator) ClusterInfoChanged(c model.Cluster) {
@@ -57,9 +58,6 @@ func (s *StatusIndicator) ClusterInfoChanged(c model.Cluster) {
 			statusIndicatorFmt,
 			c.Total,
 			c.Healthy,
-			c.Killed,
-			c.PortClosed,
-			c.Node,
 		))
 	})
 }

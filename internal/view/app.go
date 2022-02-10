@@ -219,13 +219,13 @@ func (a *App) buildHeader() tview.Primitive {
 	}
 
 	clWidth := clusterInfoWidth
-	n, err := a.Conn().Config().CurrentClusterName()
-	if err == nil {
-		size := len(n) + clusterInfoPad
-		if size > clWidth {
-			clWidth = size
-		}
-	}
+	//n, err := a.Conn().Config().CurrentClusterName()
+	//if err == nil {
+	//	size := len(n) + clusterInfoPad
+	//	if size > clWidth {
+	//		clWidth = size
+	//	}
+	//}
 	header.AddItem(a.clusterInfo(), clWidth, 1, false)
 	header.AddItem(a.Menu(), 0, 1, false)
 

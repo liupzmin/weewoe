@@ -5,10 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/liupzmin/tview"
-	"github.com/liupzmin/weewoe/internal"
 	"github.com/liupzmin/weewoe/internal/client"
 	"github.com/liupzmin/weewoe/internal/config"
 	"github.com/liupzmin/weewoe/internal/model"
@@ -29,22 +30,26 @@ type (
 
 // Table represents tabular data.
 type Table struct {
-	gvr     client.GVR
 	cat     string
 	sortCol SortColumn
 	header  render.Header
 	Path    string
 	Extras  string
 	*SelectTable
-	actions     KeyActions
-	cmdBuff     *model.FishBuff
-	styles      *config.Styles
-	viewSetting *config.ViewSetting
-	colorerFn   render.ColorerFunc
-	decorateFn  DecorateFunc
-	wide        bool
-	toast       bool
-	hasMetrics  bool
+	actions          KeyActions
+	cmdBuff          *model.FishBuff
+	styles           *config.Styles
+	viewSetting      *config.ViewSetting
+	colorerFn        render.ColorerFunc
+	decorateFn       DecorateFunc
+	ago              bool
+	wide             bool
+	toast            bool
+	hasMetrics       bool
+	refreshAgo, done chan struct{}
+	listeners        []TableListener
+	mx               sync.RWMutex
+	once             sync.Once
 }
 
 // NewTable returns a new table view.
@@ -55,10 +60,12 @@ func NewTable(cat string) *Table {
 			model: model.NewMyTable(cat),
 			marks: make(map[string]struct{}),
 		},
-		cat:     cat,
-		actions: make(KeyActions),
-		cmdBuff: model.NewFishBuff('/', model.FilterBuffer),
-		sortCol: SortColumn{asc: true},
+		cat:        cat,
+		actions:    make(KeyActions),
+		cmdBuff:    model.NewFishBuff('/', model.FilterBuffer),
+		sortCol:    SortColumn{asc: true},
+		refreshAgo: make(chan struct{}),
+		done:       make(chan struct{}),
 	}
 }
 
@@ -72,17 +79,44 @@ func (t *Table) Init(ctx context.Context) {
 	t.SetSelectionChangedFunc(t.selectionChanged)
 	t.SetBackgroundColor(tcell.ColorDefault)
 	t.Select(1, 0)
-	if cfg, ok := ctx.Value(internal.KeyViewConfig).(*config.CustomView); ok && cfg != nil {
-		cfg.AddListener(t.GVR().String(), t)
-	}
+	//if cfg, ok := ctx.Value(internal.KeyViewConfig).(*config.CustomView); ok && cfg != nil {
+	//	cfg.AddListener(t.GVR().String(), t)
+	//}
 	t.styles = mustExtractStyles(ctx)
 	t.StylesChanged(t.styles)
 }
 
-// GVR returns a resource descriptor.
-func (t *Table) GVR() client.GVR { return t.gvr }
+func (t *Table) Stop() {
+	if isChanClosed(t.refreshAgo) {
+		return
+	}
+	close(t.refreshAgo)
+	close(t.done)
+}
 
 func (t *Table) Cat() string { return t.cat }
+
+// AddListener adds a new model listener.
+func (t *Table) AddListener(l TableListener) {
+	t.listeners = append(t.listeners, l)
+}
+
+// RemoveListener delete a listener from the list.
+func (t *Table) RemoveListener(l TableListener) {
+	victim := -1
+	for i, lis := range t.listeners {
+		if lis == l {
+			victim = i
+			break
+		}
+	}
+
+	if victim >= 0 {
+		t.mx.Lock()
+		defer t.mx.Unlock()
+		t.listeners = append(t.listeners[:victim], t.listeners[victim+1:]...)
+	}
+}
 
 // ViewSettingsChanged notifies listener the view configuration changed.
 func (t *Table) ViewSettingsChanged(settings config.ViewSetting) {
@@ -192,6 +226,14 @@ func (t *Table) Update(data render.TableData, hasMetrics bool) {
 }
 
 func (t *Table) doUpdate(data render.TableData) {
+	if isChanClosed(t.refreshAgo) {
+		log.Error().Msg("the refreshAgo channel closed before update")
+		return
+	}
+
+	close(t.refreshAgo)
+	t.refreshAgo = make(chan struct{})
+
 	if client.IsAllNamespaces(data.Namespace) {
 		t.actions[KeyShiftP] = NewKeyAction("Sort Namespace", t.SortColCmd("NAMESPACE", true), false)
 	} else {
@@ -242,6 +284,30 @@ func (t *Table) doUpdate(data render.TableData) {
 		c.SetTextColor(fg)
 		col++
 	}
+
+	if data.Header.HasUT() {
+		t.AddHeaderCell(col, render.HeaderColumn{Name: "AGO"})
+		c := t.GetCell(0, col)
+		c.SetBackgroundColor(bg)
+		c.SetTextColor(fg)
+		t.ago = true
+
+		t.once.Do(func() {
+			go func() {
+				for {
+					select {
+					case <-time.After(2 * time.Second):
+						for _, l := range t.listeners {
+							l.TableTick()
+						}
+					case <-t.done:
+						return
+					}
+				}
+			}()
+		})
+	}
+
 	colIndex := custData.Header.IndexOf(t.sortCol.name, false)
 	custData.RowEvents.Sort(
 		custData.Namespace,
@@ -255,12 +321,12 @@ func (t *Table) doUpdate(data render.TableData) {
 	ComputeMaxColumns(pads, t.sortCol.name, custData.Header, custData.RowEvents)
 	for row, re := range custData.RowEvents {
 		idx, _ := data.RowEvents.FindIndex(re.Row.ID)
-		t.buildRow(row+1, re, data.RowEvents[idx], custData.Header, pads)
+		t.buildRow(row+1, re, data.RowEvents[idx], custData.Header, data.Header, pads)
 	}
 	t.updateSelection(true)
 }
 
-func (t *Table) buildRow(r int, re, ore render.RowEvent, h render.Header, pads MaxyPad) {
+func (t *Table) buildRow(r int, re, ore render.RowEvent, h, oh render.Header, pads MaxyPad) {
 	color := render.DefaultColorer
 	if t.colorerFn != nil {
 		color = t.colorerFn
@@ -270,7 +336,7 @@ func (t *Table) buildRow(r int, re, ore render.RowEvent, h render.Header, pads M
 	var col int
 	for c, field := range re.Row.Fields {
 		if c >= len(h) {
-			log.Error().Msgf("field/header overflow detected for %q -- %d::%d. Check your mappings!", t.GVR(), c, len(h))
+			log.Error().Msgf("field/header overflow detected for %q -- %d::%d. Check your mappings!", t.Cat(), c, len(h))
 			continue
 		}
 
@@ -305,6 +371,30 @@ func (t *Table) buildRow(r int, re, ore render.RowEvent, h render.Header, pads M
 		}
 		t.SetCell(r, col, cell)
 		col++
+	}
+
+	if t.ago {
+		utCol := oh.IndexOf("UPDATE-TIME", true)
+
+		cell := tview.NewTableCell(toAgeHumanFromTimeStamp(ore.Row.Fields[utCol]))
+		cell.SetExpansion(0)
+		cell.SetMaxWidth(10)
+		cell.SetAlign(tview.AlignLeft)
+		fgColor := color(t.GetModel().GetNamespace(), t.header, ore)
+		cell.SetTextColor(fgColor)
+		t.SetCell(r, col, cell)
+
+		go func() {
+			ch := t.refreshAgo
+			for {
+				select {
+				case <-ch:
+					return
+				case <-time.After(1 * time.Second):
+					cell.SetText(toAgeHumanFromTimeStamp(ore.Row.Fields[utCol]))
+				}
+			}
+		}()
 	}
 }
 
@@ -436,7 +526,7 @@ func (t *Table) styleTitle() string {
 		rc--
 	}
 
-	base := strings.Title(t.gvr.R())
+	base := strings.Title(t.Cat())
 	ns := t.GetModel().GetNamespace()
 	if client.IsClusterWide(ns) || ns == client.NotNamespaced {
 		ns = client.NamespaceAll
@@ -469,4 +559,13 @@ func (t *Table) styleTitle() string {
 	}
 
 	return title + SkinTitle(fmt.Sprintf(SearchFmt, buff), t.styles.Frame())
+}
+
+func isChanClosed(ch chan struct{}) bool {
+	select {
+	case _, received := <-ch:
+		return !received
+	default:
+	}
+	return false
 }

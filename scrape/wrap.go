@@ -101,5 +101,6 @@ func (w *NSWrapper) peep(rows render.Rows) render.Rows {
 		}
 		nrows = append(nrows, row)
 	}
+	nrows.Sort(0, true, false, false)
 	return nrows
 }

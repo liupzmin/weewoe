@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"runtime/debug"
 
@@ -47,6 +49,9 @@ func init() {
 
 // Execute root command.
 func Execute() {
+	go func() {
+		_ = http.ListenAndServe("0.0.0.0:6060", nil)
+	}()
 	if err := rootCmd.Execute(); err != nil {
 		log.Panic().Err(err)
 	}
@@ -115,20 +120,7 @@ func loadConfiguration() *config.Config {
 	if err := k9sCfg.Refine(k8sFlags, k9sFlags, k8sCfg); err != nil {
 		log.Error().Err(err).Msgf("refine failed")
 	}
-	conn, err := client.InitConnection(k8sCfg)
-	k9sCfg.SetConnection(conn)
-	if err != nil {
-		log.Error().Err(err).Msgf("failed to connect to cluster")
-		return k9sCfg
-	}
-	// Try to access server version if that fail. Connectivity issue?
-	if !k9sCfg.GetConnection().CheckConnectivity() {
-		log.Panic().Msgf("Cannot connect to cluster %s", k9sCfg.K9s.CurrentCluster)
-	}
-	if !k9sCfg.GetConnection().ConnectionOK() {
-		panic("No connectivity")
-	}
-	log.Info().Msg("✅ Kubernetes connectivity")
+
 	if err := k9sCfg.Save(); err != nil {
 		log.Error().Err(err).Msg("Config save")
 	}

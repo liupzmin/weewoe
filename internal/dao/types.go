@@ -10,18 +10,11 @@ import (
 	"github.com/liupzmin/weewoe/internal/client"
 	"github.com/liupzmin/weewoe/internal/watch"
 	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/informers"
 	restclient "k8s.io/client-go/rest"
 )
-
-// ResourceMetas represents a collection of resource metadata.
-type ResourceMetas map[client.GVR]metav1.APIResource
-
-// Accessors represents a collection of dao accessors.
-type Accessors map[client.GVR]Accessor
 
 // Factory represents a resource factory.
 type Factory interface {

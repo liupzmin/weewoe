@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"strings"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liupzmin/tview"
 )
@@ -88,9 +90,9 @@ func (s *SelectTable) GetSelectedItem2() string {
 	}
 	sel := s.GetCell(s.GetSelectedRowIndex(), 0).Text
 	if s.selectedFn != nil {
-		return s.selectedFn(sel)
+		return strings.TrimSpace(s.selectedFn(sel))
 	}
-	return sel
+	return strings.TrimSpace(sel)
 }
 
 // GetSelectedCell returns the content of a cell for the currently selected row.

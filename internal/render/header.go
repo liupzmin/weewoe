@@ -6,7 +6,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const ageCol = "AGE"
+const (
+	ageCol = "AGE"
+	utCol  = "UPDATE-TIME"
+)
 
 // HeaderColumn represent a table header.
 type HeaderColumn struct {
@@ -143,6 +146,11 @@ func (h Header) Columns(wide bool) []string {
 // HasAge returns true if table has an age column.
 func (h Header) HasAge() bool {
 	return h.IndexOf(ageCol, true) != -1
+}
+
+// HasUT returns true if table has an UPDATE-TIME column.
+func (h Header) HasUT() bool {
+	return h.IndexOf(utCol, true) != -1
 }
 
 // IsMetricsCol checks if given column index represents metrics.

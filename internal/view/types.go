@@ -3,7 +3,6 @@ package view
 import (
 	"context"
 
-	"github.com/liupzmin/weewoe/internal/client"
 	"github.com/liupzmin/weewoe/internal/model"
 	"github.com/liupzmin/weewoe/internal/ui"
 )
@@ -71,9 +70,6 @@ type TableViewer interface {
 // ResourceViewer represents a generic resource viewer.
 type ResourceViewer interface {
 	TableViewer
-
-	// GVR returns a resource descriptor.
-	GVR() client.GVR
 
 	// SetContextFn provision a custom context.
 	SetContextFn(ContextFunc)

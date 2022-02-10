@@ -89,7 +89,7 @@ func (t *Table) keyboard(evt *tcell.EventKey) *tcell.EventKey {
 }
 
 // Name returns the table name.
-func (t *Table) Name() string { return t.GVR().R() }
+func (t *Table) Name() string { return t.Cat() }
 
 // AddBindKeysFn adds additional key bindings.
 func (t *Table) AddBindKeysFn(f BindKeysFunc) {

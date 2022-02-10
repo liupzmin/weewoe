@@ -75,7 +75,7 @@ func (t *MyTable) RemoveListener(l TableListener) {
 
 // Watch initiates model updates.
 func (t *MyTable) Watch(ctx context.Context) error {
-	t.reload(ctx)
+	// t.reload(ctx)
 	go t.updater(ctx)
 
 	return nil
@@ -178,7 +178,8 @@ func (t *MyTable) updater(ctx context.Context) {
 func (t *MyTable) reload(ctx context.Context) {
 	factory, ok := ctx.Value(internal.KeyFactory).(dao.MyFactory)
 	if !ok {
-		log.Panic().Msgf("expected Factory in context but got %T", ctx.Value(internal.KeyFactory))
+		log.Panic().Msgf(""+
+			"expected Factory in context but got %T", ctx.Value(internal.KeyFactory))
 	}
 	err := factory.SendCommand(REFRESH)
 	if err != nil {

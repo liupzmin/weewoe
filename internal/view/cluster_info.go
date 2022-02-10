@@ -64,7 +64,9 @@ func (c *ClusterInfo) TableDataChanged(data render.TableData) {
 	c.app.QueueUpdateDraw(func() {
 		c.Clear()
 		c.layout()
-		row := c.setCell(0, fmt.Sprintf("[pink::b]%d", cl.Total))
+		// todo: 修改 domain
+		row := c.setCell(0, fmt.Sprintf("[white::b]%s", "HFP"))
+		row = c.setCell(row, fmt.Sprintf("[aqua::b]%d", cl.Total))
 		row = c.setCell(row, fmt.Sprintf("[green::b]%d", cl.Healthy))
 		row = c.setCell(row, fmt.Sprintf("[red::b]%d", cl.Killed))
 		row = c.setCell(row, fmt.Sprintf("[red::b]%d", cl.PortClosed))
@@ -109,7 +111,7 @@ func (c *ClusterInfo) RemoveListener(l ClusterInfoListener) {
 }
 
 func (c *ClusterInfo) layout() {
-	for row, section := range []string{"Total", "Healthy", "Killed", "PortClosed", "Node"} {
+	for row, section := range []string{"Domain", "Total", "Healthy", "Killed", "Closed Ports", "Nodes"} {
 		c.SetCell(row, 0, c.sectionCell(section))
 		c.SetCell(row, 1, c.infoCell(render.NAValue))
 	}

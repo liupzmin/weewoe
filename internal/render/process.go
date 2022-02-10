@@ -65,7 +65,7 @@ func (Process) Header(ns string) Header {
 		HeaderColumn{Name: "PATH"},
 		HeaderColumn{Name: "FLAG"},
 		HeaderColumn{Name: "START-TIME"},
-		HeaderColumn{Name: "UPDATE-TIME"},
+		HeaderColumn{Name: "UPDATE-TIME", Wide: true},
 		HeaderColumn{Name: "Suspend"},
 	}
 }

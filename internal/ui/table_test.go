@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/liupzmin/weewoe/internal"
-	"github.com/liupzmin/weewoe/internal/client"
 	"github.com/liupzmin/weewoe/internal/config"
 	"github.com/liupzmin/weewoe/internal/model"
 	"github.com/liupzmin/weewoe/internal/render"
@@ -16,14 +15,14 @@ import (
 )
 
 func TestTableNew(t *testing.T) {
-	v := ui.NewTable(client.NewGVR("fred"))
+	v := ui.NewTable("fred")
 	v.Init(makeContext())
 
-	assert.Equal(t, "fred", v.GVR().String())
+	assert.Equal(t, "fred", v.Cat())
 }
 
 func TestTableUpdate(t *testing.T) {
-	v := ui.NewTable(client.NewGVR("fred"))
+	v := ui.NewTable("fred")
 	v.Init(makeContext())
 
 	data := makeTableData()
@@ -34,7 +33,7 @@ func TestTableUpdate(t *testing.T) {
 }
 
 func TestTableSelection(t *testing.T) {
-	v := ui.NewTable(client.NewGVR("fred"))
+	v := ui.NewTable("fred")
 	v.Init(makeContext())
 	m := &mockModel{}
 	v.SetModel(m)

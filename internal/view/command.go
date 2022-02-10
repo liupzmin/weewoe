@@ -5,7 +5,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/liupzmin/weewoe/internal/client"
 	"github.com/liupzmin/weewoe/internal/model"
 	"github.com/rs/zerolog/log"
 )
@@ -136,26 +135,26 @@ func (c *Command) componentFor(cat, path string, v *MetaViewer) ResourceViewer {
 }
 
 func (c *Command) exec(cmd, gvr string, comp model.Component, clearStack bool) (err error) {
-	//defer func() {
-	//	if e := recover(); e != nil {
-	//		log.Error().Msgf("Something bad happened! %#v", e)
-	//		c.app.Content.Dump()
-	//		log.Debug().Msgf("History %v", c.app.cmdHistory.List())
-	//
-	//		hh := c.app.cmdHistory.List()
-	//		if len(hh) == 0 {
-	//			_ = c.run("process", "", true)
-	//		} else {
-	//			_ = c.run(hh[0], "", true)
-	//		}
-	//		err = fmt.Errorf("Invalid command %q", cmd)
-	//	}
-	//}()
+	defer func() {
+		if e := recover(); e != nil {
+			log.Error().Msgf("Something bad happened! %#v", e)
+			c.app.Content.Dump()
+			log.Debug().Msgf("History %v", c.app.cmdHistory.List())
+
+			hh := c.app.cmdHistory.List()
+			if len(hh) == 0 {
+				_ = c.run("process", "", true)
+			} else {
+				_ = c.run(hh[0], "", true)
+			}
+			err = fmt.Errorf("Invalid command %q", cmd)
+		}
+	}()
 
 	if comp == nil {
 		return fmt.Errorf("No component found for %s", gvr)
 	}
-	c.app.Flash().Infof("Viewing %s...", client.NewGVR(gvr).R())
+	c.app.Flash().Infof("Viewing %s...", gvr)
 	if tokens := strings.Split(cmd, " "); len(tokens) >= 2 {
 		cmd = tokens[0]
 	}
