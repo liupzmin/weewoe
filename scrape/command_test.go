@@ -7,7 +7,7 @@ import (
 )
 
 func TestGetPID(t *testing.T) {
-	conn, err := ssh.NewConnection("192.168.0.127:22", "root", false)
+	conn, err := ssh.NewConnection("192.168.0.127:22", "root")
 	if err != nil {
 		t.Errorf("new connnection error: %v", err)
 	}
@@ -30,7 +30,7 @@ func TestGetPID(t *testing.T) {
 }
 
 func TestCommand_GetProcessStat(t *testing.T) {
-	conn, err := ssh.NewConnection("192.168.0.127:22", "root", false)
+	conn, err := ssh.NewConnection("192.168.0.127:22", "root")
 	if err != nil {
 		t.Errorf("new connnection error: %v", err)
 	}

@@ -22,12 +22,13 @@ const (
 const TimeLayout = "2006-01-02 15:04:05"
 
 type Target struct {
-	Conn     *ssh.Connection
+	Conn *ssh.Connection
+	// used to compute process start time
 	BootTime int64
 }
 
-func (t Target) Close() error {
-	return t.Conn.Close()
+func (t Target) Close() {
+	t.Conn.Close()
 }
 
 var (
@@ -132,19 +133,13 @@ func initConnection(conf Config) {
 	}
 	for _, v := range conf.Processes {
 		if _, ok := instances[v.Host]; !ok {
-			conn, err := ssh.NewConnection(v.Host+":22", "root", true)
+			conn, err := ssh.NewConnection(v.Host+":22", "root")
 			if err != nil {
 				log.Errorf("connect to %s failed: %s", v.Host, err.Error())
 				continue
 			}
-			btime, err := GetBootTime(conn)
-			if err != nil {
-				log.Errorf("get %s boot time failed: %s", v.Host, err.Error())
-				continue
-			}
 			instances[v.Host] = Target{
-				Conn:     conn,
-				BootTime: btime,
+				Conn: conn,
 			}
 		}
 	}

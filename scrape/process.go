@@ -121,7 +121,9 @@ func (p *ProcessDetail) collect(du time.Duration) {
 		case <-p.done:
 			log.Debugf("Process Collector: work down! I'm quitting.")
 			for _, v := range instances {
-				_ = v.Close()
+				if v.Conn.IsValid() {
+					v.Close()
+				}
 			}
 			p.done <- struct{}{}
 			return
@@ -226,7 +228,7 @@ func (p *ProcessDetail) collectPort() {
 
 	log.Debug("the new port collection ", log.Any("collection", collection))
 
-	go p.SyncPort(collection)
+	p.SyncPort(collection)
 }
 
 func (p *ProcessDetail) Stop() {

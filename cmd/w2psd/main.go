@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	_ "net/http/pprof"
 
 	"github.com/liupzmin/weewoe/log"
 	"github.com/liupzmin/weewoe/mail"

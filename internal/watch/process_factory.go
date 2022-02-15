@@ -64,6 +64,7 @@ func (p ProcessFactory) Stream(cat string) (<-chan render.Rows, error) {
 			data, err := stream.Recv()
 			if err == io.EOF {
 				log.Info().Msg("End of DrainProcessState!")
+				// todo: 连接断开的后续操作？
 				return
 			}
 			if err != nil {

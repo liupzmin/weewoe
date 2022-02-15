@@ -49,8 +49,15 @@ func (c *Command) GetProcessStat() (*ProcessState, error) {
 		Timestamp:     time.Now().Unix(),
 	}
 
+	btime, err := GetBootTime(c.target.Conn)
+	if err != nil {
+		log.Warnf("GetBootTime error: %s", err)
+		return bad, nil
+	}
+
 	pid, err := c.GetPID()
 	if err != nil {
+		log.Warnf("GetPID failed: %s", err)
 		return bad, nil
 	}
 	cmd := fmt.Sprintf("cat /proc/%s/stat", pid)
@@ -58,6 +65,7 @@ func (c *Command) GetProcessStat() (*ProcessState, error) {
 	if err != nil {
 		var exit *ssh2.ExitError
 		if errors.As(err, &exit) {
+			log.Warnf("GetProcessStat error exit: %s", err)
 			return bad, nil
 		} else {
 			return nil, err
@@ -78,7 +86,7 @@ func (c *Command) GetProcessStat() (*ProcessState, error) {
 		Process:       c.p,
 		State:         Good,
 		StateDescribe: ps.State,
-		StartTime:     ps.StartTime(c.target.BootTime),
+		StartTime:     ps.StartTime(btime),
 		Timestamp:     time.Now().Unix(),
 	}, nil
 }

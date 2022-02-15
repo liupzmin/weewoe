@@ -8,7 +8,7 @@ import (
 )
 
 func TestNewConnection(t *testing.T) {
-	conn, err := NewConnection("192.168.0.127:22", "root", true)
+	conn, err := NewConnection("192.168.0.127:22", "root")
 	if err != nil {
 		t.Errorf("new connnection error: %v", err)
 	}
@@ -16,7 +16,7 @@ func TestNewConnection(t *testing.T) {
 }
 
 func TestConnection_SingleRun(t *testing.T) {
-	conn, err := NewConnection("192.168.0.127:22", "root", false)
+	conn, err := NewConnection("192.168.0.127:22", "root")
 	if err != nil {
 		t.Errorf("new connnection error: %v", err)
 	}
@@ -30,11 +30,11 @@ func TestConnection_SingleRun(t *testing.T) {
 		}
 	}
 	t.Logf("single run output: %s", out)
-	_ = conn.Close()
+	conn.Close()
 }
 
 func TestConnection_MultipleRun(t *testing.T) {
-	conn, err := NewConnection("192.168.0.127:22", "root", false)
+	conn, err := NewConnection("192.168.0.127:22", "root")
 	if err != nil {
 		t.Errorf("new connnection error: %v", err)
 	}
@@ -44,5 +44,5 @@ func TestConnection_MultipleRun(t *testing.T) {
 		t.Errorf("single run failed: %s", err)
 	}
 	t.Logf("multiple run output: %s", out)
-	_ = conn.Close()
+	conn.Close()
 }
