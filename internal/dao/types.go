@@ -46,7 +46,7 @@ type Factory interface {
 type FactoryFn func() MyFactory
 
 type MyFactory interface {
-	Stream(cat string) (<-chan render.Rows, error)
+	Stream(cat string) <-chan render.Rows
 	SendCommand(int64) error
 	Terminate()
 }

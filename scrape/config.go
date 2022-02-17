@@ -2,6 +2,7 @@ package scrape
 
 import (
 	"sync"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/liupzmin/weewoe/log"
@@ -29,6 +30,21 @@ type Target struct {
 
 func (t Target) Close() {
 	t.Conn.Close()
+}
+
+func (t Target) WaitClient() {
+	for {
+		if t.Conn.IsValid() {
+			return
+		}
+
+		select {
+		case <-time.After(5 * time.Second):
+			return
+		default:
+
+		}
+	}
 }
 
 var (

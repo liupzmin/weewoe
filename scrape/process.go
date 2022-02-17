@@ -160,6 +160,7 @@ func (p *ProcessDetail) collectProcess() {
 			imux.RLock()
 			t := instances[pc.Host]
 			imux.RUnlock()
+			t.WaitClient()
 
 			mux.Lock()
 			defer mux.Unlock()
@@ -183,9 +184,7 @@ func (p *ProcessDetail) collectProcess() {
 	}
 
 	wg.Wait()
-
 	log.Debug("the new process collection ", log.Any("collection", collection))
-
 	p.SyncPro(collection)
 }
 

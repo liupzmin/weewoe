@@ -147,11 +147,8 @@ func (t *MyTable) openGate(ctx context.Context) <-chan render.Rows {
 		if !ok {
 			log.Panic().Msgf("expected Factory in context but got %T", ctx.Value(internal.KeyFactory))
 		}
-		var err error
-		t.r, err = factory.Stream(t.cat)
-		if err != nil {
-			log.Panic().Msgf("Open stream failed: %s", err)
-		}
+
+		t.r = factory.Stream(t.cat)
 	})
 	return t.r
 }
