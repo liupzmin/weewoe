@@ -30,9 +30,9 @@ const (
 	// Blank represents no value.
 	Blank = ""
 
-	KILLED = "KILLED"
-	OPEN   = "OPEN"
-	CLOSED = "CLOSED"
+	EXCEPTION = "EXCEPTION"
+	OPEN      = "OPEN"
+	CLOSED    = "CLOSED"
 )
 
 const (

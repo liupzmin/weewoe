@@ -13,10 +13,10 @@ import (
 )
 
 const (
-	RUNNING = "RUNNING"
-	KILLED  = "KILLED"
-	OPEN    = "OPEN"
-	CLOSED  = "CLOSED"
+	RUNNING   = "RUNNING"
+	EXCEPTION = "EXCEPTION"
+	OPEN      = "OPEN"
+	CLOSED    = "CLOSED"
 )
 
 type Group struct {
@@ -365,7 +365,7 @@ func (c *ProcessCache) MergeSort(pros []*ProcessState, ports []*PortState) []Gro
 func GetProcessStateDesc(state int64) string {
 	switch state {
 	case Bad:
-		return KILLED
+		return EXCEPTION
 	case Good:
 		return RUNNING
 	default:
@@ -375,7 +375,7 @@ func GetProcessStateDesc(state int64) string {
 
 func FromProcessStateDesc(desc string) int64 {
 	switch desc {
-	case KILLED:
+	case EXCEPTION:
 		return Bad
 	case RUNNING:
 		return Good

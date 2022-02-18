@@ -9,6 +9,7 @@ import (
 const (
 	ageCol = "AGE"
 	utCol  = "UPDATE-TIME"
+	stCol  = "START-TIME"
 )
 
 // HeaderColumn represent a table header.
@@ -151,6 +152,11 @@ func (h Header) HasAge() bool {
 // HasUT returns true if table has an UPDATE-TIME column.
 func (h Header) HasUT() bool {
 	return h.IndexOf(utCol, true) != -1
+}
+
+// HasST returns true if table has an START-TIME column.
+func (h Header) HasST() bool {
+	return h.IndexOf(stCol, true) != -1
 }
 
 // IsMetricsCol checks if given column index represents metrics.

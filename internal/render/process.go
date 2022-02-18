@@ -38,7 +38,7 @@ func (p Process) ColorerFunc() ColorerFunc {
 			if !Happy(ns, h, re.Row) {
 				c = ErrColor
 			}
-		case KILLED:
+		case EXCEPTION:
 			c = ErrColor
 		case OPEN:
 			c = StdColor

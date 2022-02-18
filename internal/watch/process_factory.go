@@ -75,8 +75,8 @@ func (p ProcessFactory) Stream(cat string) <-chan render.Rows {
 			}
 			if err != nil {
 				if stream.Context().Err() == context.Canceled {
-					log.Info().Msg("DrainProcessState canceled, go to Repeat!")
-					goto Repeat
+					log.Info().Msg("DrainProcessState canceled!")
+					return
 				}
 				log.Error().Msgf("DrainProcessState recv failed: %s, go to Repeat!", err)
 

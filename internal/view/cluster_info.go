@@ -150,7 +150,7 @@ func (c *ClusterInfo) count(data render.TableData) model.Cluster {
 		switch v.Row.Fields[2] {
 		case render.Running:
 			healthy++
-		case render.KILLED:
+		case render.EXCEPTION:
 			killed++
 		}
 

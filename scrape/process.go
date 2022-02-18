@@ -34,7 +34,7 @@ func NewProcessDetail() *ProcessDetail {
 		listeners:    make([]TableListener, 0),
 		re:           make(chan struct{}),
 		done:         make(chan struct{}),
-		limiter:      rate.NewLimiter(rate.Every(30*time.Second), 1),
+		limiter:      rate.NewLimiter(rate.Every(5*time.Second), 3),
 	}
 	return p
 }

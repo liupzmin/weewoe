@@ -42,7 +42,7 @@ type Table struct {
 	viewSetting      *config.ViewSetting
 	colorerFn        render.ColorerFunc
 	decorateFn       DecorateFunc
-	ago              bool
+	ago, age         bool
 	wide             bool
 	toast            bool
 	hasMetrics       bool
@@ -285,12 +285,22 @@ func (t *Table) doUpdate(data render.TableData) {
 		col++
 	}
 
+	if data.Header.HasST() {
+		t.AddHeaderCell(col, render.HeaderColumn{Name: "AGE"})
+		c := t.GetCell(0, col)
+		c.SetBackgroundColor(bg)
+		c.SetTextColor(fg)
+		t.age = true
+		col++
+	}
+
 	if data.Header.HasUT() {
 		t.AddHeaderCell(col, render.HeaderColumn{Name: "AGO"})
 		c := t.GetCell(0, col)
 		c.SetBackgroundColor(bg)
 		c.SetTextColor(fg)
 		t.ago = true
+		col++
 
 		t.once.Do(func() {
 			go func() {
@@ -373,6 +383,20 @@ func (t *Table) buildRow(r int, re, ore render.RowEvent, h, oh render.Header, pa
 		col++
 	}
 
+	if t.age {
+		stCol := oh.IndexOf("START-TIME", true)
+
+		cell := tview.NewTableCell(toAgeHumanFromTimeStamp(ore.Row.Fields[stCol]))
+		cell.SetExpansion(0)
+		cell.SetMaxWidth(10)
+		cell.SetAlign(tview.AlignLeft)
+		fgColor := color(t.GetModel().GetNamespace(), t.header, ore)
+		cell.SetTextColor(fgColor)
+		t.SetCell(r, col, cell)
+		cell.SetText(toAgeHumanFromTimeStamp(ore.Row.Fields[stCol]))
+		col++
+	}
+
 	if t.ago {
 		utCol := oh.IndexOf("UPDATE-TIME", true)
 
@@ -383,6 +407,7 @@ func (t *Table) buildRow(r int, re, ore render.RowEvent, h, oh render.Header, pa
 		fgColor := color(t.GetModel().GetNamespace(), t.header, ore)
 		cell.SetTextColor(fgColor)
 		t.SetCell(r, col, cell)
+		col++
 
 		go func() {
 			ch := t.refreshAgo
