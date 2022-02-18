@@ -372,7 +372,7 @@ func (b *Browser) refreshActions() {
 	aa := ui.KeyActions{
 		ui.KeyC:        ui.NewKeyAction("Copy", b.cpCmd, false),
 		tcell.KeyEnter: ui.NewKeyAction("View", b.enterCmd, false),
-		tcell.KeyCtrlR: ui.NewKeyAction("Refresh", b.refreshCmd, false),
+		tcell.KeyCtrlR: ui.NewKeyAction("Refresh", b.refreshCmd, true),
 	}
 
 	b.namespaceActions(aa)

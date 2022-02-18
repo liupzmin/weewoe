@@ -77,7 +77,6 @@ func (p *Process) bindKeys(aa ui.KeyActions) {
 
 	aa.Add(ui.KeyActions{
 		ui.KeyShiftR: ui.NewKeyAction("Sort Name", p.GetTable().SortColCmd("NAME", true), true),
-		ui.KeyShiftP: ui.NewKeyAction("Sort Ports Status", p.GetTable().SortColCmd("PORTS-STATUS", true), true),
 		ui.KeyShiftS: ui.NewKeyAction("Sort Status", p.GetTable().SortColCmd(statusCol, true), true),
 		ui.KeyShiftI: ui.NewKeyAction("Sort Start Time", p.GetTable().SortColCmd("START-TIME", true), true),
 		ui.KeyShiftO: ui.NewKeyAction("Sort Node", p.GetTable().SortColCmd("NODE", true), true),

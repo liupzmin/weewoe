@@ -1,16 +1,18 @@
 package scrape
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"sync"
 	"time"
 
+	"golang.org/x/time/rate"
+
 	"github.com/liupzmin/weewoe/internal/render"
+	"github.com/liupzmin/weewoe/log"
 
 	"github.com/spf13/viper"
-
-	"github.com/liupzmin/weewoe/log"
 )
 
 var (
@@ -22,6 +24,7 @@ type ProcessDetail struct {
 	running   bool
 	listeners []TableListener
 	re, done  chan struct{}
+	limiter   *rate.Limiter
 	sync.RWMutex
 }
 
@@ -31,6 +34,7 @@ func NewProcessDetail() *ProcessDetail {
 		listeners:    make([]TableListener, 0),
 		re:           make(chan struct{}),
 		done:         make(chan struct{}),
+		limiter:      rate.NewLimiter(rate.Every(30*time.Second), 1),
 	}
 	return p
 }
@@ -112,14 +116,15 @@ func (p *ProcessDetail) collect(du time.Duration) {
 	for {
 		select {
 		case <-t.C:
-			log.Debugf("tick! tick! it's time to collect data")
+			log.Info("tick! tick! it's time to collect data")
 			p.scrape()
 		case <-p.re:
+			_ = p.limiter.Wait(context.TODO())
 			t.Reset(du * time.Minute)
-			log.Debugf("attention! attention! it's time to reload data")
+			log.Info("attention! attention! it's time to reload data")
 			p.scrape()
 		case <-p.done:
-			log.Debugf("Process Collector: work down! I'm quitting.")
+			log.Info("Process Collector: work down! I'm quitting.")
 			for _, v := range instances {
 				if v.Conn.IsValid() {
 					v.Close()
