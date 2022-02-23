@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/spf13/viper"
+
 	"github.com/liupzmin/weewoe/serialize"
 
 	"github.com/liupzmin/weewoe/log"
@@ -30,6 +32,13 @@ func Stop() {
 }
 
 type State struct{}
+
+func (s *State) GetDomain(ctx context.Context, empty *pb.Empty) (*pb.Domain, error) {
+	name := viper.GetString("domain.name")
+	return &pb.Domain{
+		Name: name,
+	}, nil
+}
 
 func (s *State) Drain(kind *pb.Kind, stream pb.State_DrainServer) error {
 	var (

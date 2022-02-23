@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/rs/zerolog/log"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var toFileName = regexp.MustCompile(`[^(\w/\.)]`)
@@ -53,26 +52,12 @@ func Namespaced(p string) (string, string) {
 	return strings.Trim(ns, "/"), n
 }
 
-// CoFQN returns a fully qualified container name.
-func CoFQN(m metav1.ObjectMeta, co string) string {
-	return MetaFQN(m) + ":" + co
-}
-
 // FQN returns a fully qualified resource name.
 func FQN(ns, n string) string {
 	if ns == "" {
 		return n
 	}
 	return ns + "/" + n
-}
-
-// MetaFQN returns a fully qualified resource name.
-func MetaFQN(m metav1.ObjectMeta) string {
-	if m.Namespace == "" {
-		return FQN(ClusterScope, m.Name)
-	}
-
-	return FQN(m.Namespace, m.Name)
 }
 
 func mustHomeDir() string {

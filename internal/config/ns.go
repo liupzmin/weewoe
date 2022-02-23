@@ -1,10 +1,5 @@
 package config
 
-import (
-	"github.com/liupzmin/weewoe/internal/client"
-	"github.com/rs/zerolog/log"
-)
-
 const (
 	// MaxFavoritesNS number # favorite namespaces to keep in the configuration.
 	MaxFavoritesNS = 9
@@ -26,27 +21,8 @@ func NewNamespace() *Namespace {
 	}
 }
 
-// Validate a namespace is setup correctly.
-func (n *Namespace) Validate(c client.Connection, ks KubeSettings) {
-	nns, err := c.ValidNamespaces()
-	if err != nil {
-		return
-	}
-	nn := client.NamespaceNames(nns)
-	if !n.isAllNamespaces() && !InList(nn, n.Active) {
-		log.Error().Msgf("[Config] Validation error active namespace %q does not exists", n.Active)
-	}
-
-	for _, ns := range n.Favorites {
-		if ns != allNS && !InList(nn, ns) {
-			log.Debug().Msgf("[Config] Invalid favorite found '%s' - %t", ns, n.isAllNamespaces())
-			n.rmFavNS(ns)
-		}
-	}
-}
-
 // SetActive set the active namespace.
-func (n *Namespace) SetActive(ns string, ks KubeSettings) error {
+func (n *Namespace) SetActive(ns string) error {
 	n.Active = ns
 	if ns != "" {
 		n.addFavNS(ns)

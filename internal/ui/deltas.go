@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/liupzmin/weewoe/internal/render"
-	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 const (
@@ -60,7 +59,7 @@ func deltaPerc(o, n string) (string, bool) {
 
 func deltaQty(o, n string) (string, bool) {
 	var delta string
-	q1, err := resource.ParseQuantity(o)
+	/*q1, err := resource.ParseQuantity(o)
 	if err != nil {
 		return delta, false
 	}
@@ -71,7 +70,7 @@ func deltaQty(o, n string) (string, bool) {
 		delta = PlusSign
 	case 1:
 		delta = MinusSign
-	}
+	}*/
 	return delta, true
 }
 
@@ -107,9 +106,9 @@ func Deltas(o, n string) string {
 		return d
 	}
 
-	if d, ok := deltaQty(o, n); ok {
+	/*if d, ok := deltaQty(o, n); ok {
 		return d
-	}
+	}*/
 
 	if d, ok := deltaDur(o, n); ok {
 		return d

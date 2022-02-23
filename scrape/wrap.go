@@ -34,10 +34,7 @@ func (w Wrapper) TableDataChanged(data render.Rows) {
 	w.ch <- b
 }
 
-func (w Wrapper) TableLoadFailed(err error) {
-	//TODO implement me
-	panic("implement me")
-}
+func (w Wrapper) TableLoadFailed(err error) {}
 
 func (w Wrapper) Chan() chan []byte {
 	return w.ch
@@ -65,10 +62,7 @@ func (w NSWrapper) TableDataChanged(data render.Rows) {
 	w.ch <- b
 }
 
-func (w NSWrapper) TableLoadFailed(err error) {
-	//TODO implement me
-	panic("implement me")
-}
+func (w NSWrapper) TableLoadFailed(err error) {}
 
 func (w NSWrapper) Chan() chan []byte {
 	return w.ch

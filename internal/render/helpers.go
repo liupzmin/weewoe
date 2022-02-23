@@ -6,14 +6,13 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/duration"
+
 	"github.com/liupzmin/tview"
 	"github.com/liupzmin/weewoe/internal/client"
 	runewidth "github.com/mattn/go-runewidth"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/duration"
 )
 
 func runesToNum(rr []rune) int {
@@ -80,16 +79,6 @@ func asStatus(err error) string {
 		return ""
 	}
 	return err.Error()
-}
-
-func asSelector(s *metav1.LabelSelector) string {
-	sel, err := metav1.LabelSelectorAsSelector(s)
-	if err != nil {
-		log.Error().Err(err).Msg("Selector conversion failed")
-		return NAValue
-	}
-
-	return sel.String()
 }
 
 // ToSelector flattens a map selector to a string selector.
@@ -192,10 +181,6 @@ func boolToStr(b bool) string {
 	default:
 		return "false"
 	}
-}
-
-func toAge(timestamp metav1.Time) string {
-	return time.Since(timestamp.Time).String()
 }
 
 func toAgeHuman(s string) string {

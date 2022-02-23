@@ -65,6 +65,7 @@ func (m *Mail) Send(title, content string) {
 	if err := d.DialAndSend(gm); err != nil {
 		log.Errorf("DialAndSend err %v:", err)
 	}
+	log.Info("Send Mail Success!")
 }
 
 type loginAuth struct {

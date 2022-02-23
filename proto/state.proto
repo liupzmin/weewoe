@@ -2,6 +2,7 @@ syntax = "proto3";
 package state;
 
 service State {
+  rpc GetDomain(Empty) returns (Domain) {}
   rpc Drain(Kind) returns (stream Data) {}
   rpc SendCommand(Command) returns (Empty) {}
 }
@@ -19,5 +20,9 @@ message Data {
 }
 
 message Kind {
+  string Name = 1;
+}
+
+message Domain {
   string Name = 1;
 }

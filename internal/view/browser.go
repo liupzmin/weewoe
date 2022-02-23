@@ -171,7 +171,7 @@ func (b *Browser) BufferActive(state bool, k model.BufferKind) {
 		log.Error().Err(err).Msgf("Refresh failed for %s", b.Cat())
 	}
 	b.app.QueueUpdateDraw(func() {
-		b.Update(b.GetModel().Peek(), b.App().Conn().HasMetrics())
+		b.Update(b.GetModel().Peek(), false)
 		if b.GetRowCount() > 1 {
 			b.App().filterHistory.Push(b.CmdBuff().GetText())
 		}
@@ -284,6 +284,16 @@ func (b *Browser) filterCmd(evt *tcell.EventKey) *tcell.EventKey {
 	return nil
 }
 
+func (b *Browser) sendMailCmd(evt *tcell.EventKey) *tcell.EventKey {
+	b.app.Flash().Info("Sending Mail...")
+	err := b.GetTable().GetModel().SendCommand(b.prepareContext(), model.MAIL)
+	if err != nil {
+		b.app.Flash().Errf("Send Mail Failed: %s", err)
+	}
+
+	return evt
+}
+
 func (b *Browser) enterCmd(evt *tcell.EventKey) *tcell.EventKey {
 	path := b.GetSelectedItem()
 	if b.filterCmd(evt) == nil || path == "" {
@@ -373,6 +383,7 @@ func (b *Browser) refreshActions() {
 		ui.KeyC:        ui.NewKeyAction("Copy", b.cpCmd, false),
 		tcell.KeyEnter: ui.NewKeyAction("View", b.enterCmd, false),
 		tcell.KeyCtrlR: ui.NewKeyAction("Refresh", b.refreshCmd, true),
+		tcell.KeyCtrlE: ui.NewKeyAction("Send Mail", b.sendMailCmd, true),
 	}
 
 	b.namespaceActions(aa)

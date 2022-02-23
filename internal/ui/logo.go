@@ -8,7 +8,7 @@ import (
 	"github.com/liupzmin/weewoe/internal/config"
 )
 
-// Logo represents a K9s logo.
+// Logo represents a W2 logo.
 type Logo struct {
 	*tview.Flex
 

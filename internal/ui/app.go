@@ -6,7 +6,6 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/liupzmin/tview"
-	"github.com/liupzmin/weewoe/internal/client"
 	"github.com/liupzmin/weewoe/internal/config"
 	"github.com/liupzmin/weewoe/internal/model"
 	"github.com/rs/zerolog/log"
@@ -41,7 +40,7 @@ func NewApp(cfg *config.Config, context string) *App {
 	a.views = map[string]tview.Primitive{
 		"menu":   NewMenu(a.Styles),
 		"logo":   NewLogo(a.Styles),
-		"prompt": NewPrompt(&a, a.Config.K9s.NoIcons, a.Styles),
+		"prompt": NewPrompt(&a, a.Config.W2.NoIcons, a.Styles),
 		"crumbs": NewCrumbs(a.Styles),
 	}
 
@@ -55,7 +54,7 @@ func (a *App) Init() {
 	a.cmdBuff.AddListener(a)
 	a.Styles.AddListener(a)
 
-	a.SetRoot(a.Main, true).EnableMouse(a.Config.K9s.EnableMouse)
+	a.SetRoot(a.Main, true).EnableMouse(a.Config.W2.EnableMouse)
 }
 
 // QueueUpdate queues up a ui action.
@@ -134,11 +133,6 @@ func (a *App) StylesChanged(s *config.Styles) {
 // ReloadStyles reloads skin file.
 func (a *App) ReloadStyles(context string) {
 	a.RefreshStyles(context)
-}
-
-// Conn returns an api server connection.
-func (a *App) Conn() client.Connection {
-	return a.Config.GetConnection()
 }
 
 func (a *App) bindKeys() {

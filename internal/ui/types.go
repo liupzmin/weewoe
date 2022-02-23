@@ -6,7 +6,6 @@ import (
 
 	"github.com/liupzmin/weewoe/internal/model"
 	"github.com/liupzmin/weewoe/internal/render"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type (
@@ -35,16 +34,9 @@ type Namespaceable interface {
 	InNamespace(string) bool
 }
 
-// Lister represents a viewable resource.
-type Lister interface {
-	// Get returns a resource instance.
-	Get(ctx context.Context, path string) (runtime.Object, error)
-}
-
 // Tabular represents a tabular model.
 type Tabular interface {
 	Namespaceable
-	Lister
 
 	// SetInstance sets parent resource path.
 	SetInstance(string)
@@ -66,6 +58,9 @@ type Tabular interface {
 
 	// Refresh forces a new refresh.
 	Refresh(context.Context) error
+
+	// SendCommand customs actions
+	SendCommand(context.Context, int64) error
 
 	// SetRefreshRate sets the model watch loop rate.
 	SetRefreshRate(time.Duration)

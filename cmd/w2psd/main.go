@@ -52,8 +52,9 @@ func cronSendMail() {
 	m := mail.New()
 
 	go func() {
-		<-scrape.SendMail
-		m.Run()
+		for _ = range scrape.SendMail {
+			m.Run()
+		}
 	}()
 
 	if viper.GetBool("mail.send") {

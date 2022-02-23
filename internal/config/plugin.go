@@ -9,15 +9,15 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// K9sPlugins manages K9s plugins.
-var K9sPlugins = filepath.Join(K9sHome(), "plugin.yml")
+// K9sPlugins manages W2 plugins.
+var K9sPlugins = filepath.Join(W2Home(), "plugin.yml")
 
 // Plugins represents a collection of plugins.
 type Plugins struct {
 	Plugin map[string]Plugin `yaml:"plugin"`
 }
 
-// Plugin describes a K9s plugin.
+// Plugin describes a W2 plugin.
 type Plugin struct {
 	Scopes      []string `yaml:"scopes"`
 	Args        []string `yaml:"args"`
@@ -40,7 +40,7 @@ func NewPlugins() Plugins {
 	}
 }
 
-// Load K9s plugins.
+// Load W2 plugins.
 func (p Plugins) Load() error {
 	return p.LoadPlugins(K9sPlugins)
 }

@@ -1,6 +1,6 @@
 package config
 
-// FeatureGates represents K9s opt-in features.
+// FeatureGates represents W2 opt-in features.
 type FeatureGates struct {
 	NodeShell bool `yaml:"nodeShell"`
 }

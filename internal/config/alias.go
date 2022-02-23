@@ -9,8 +9,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// K9sAlias manages K9s aliases.
-var K9sAlias = filepath.Join(K9sHome(), "alias.yml")
+// K9sAlias manages W2 aliases.
+var K9sAlias = filepath.Join(W2Home(), "alias.yml")
 
 // Alias tracks shortname to GVR mappings.
 type Alias map[string]string
@@ -85,9 +85,9 @@ func (a *Aliases) Define(gvr string, aliases ...string) {
 	defer a.mx.Unlock()
 
 	// BOZO!! Could not get full events struct using this api group??
-	if gvr == "events.k8s.io/v1/events" || gvr == "extensions/v1beta1" {
+	/*if gvr == "events.k8s.io/v1/events" || gvr == "extensions/v1beta1" {
 		return
-	}
+	}*/
 
 	for _, alias := range aliases {
 		if _, ok := a.Alias[alias]; ok {
@@ -97,7 +97,7 @@ func (a *Aliases) Define(gvr string, aliases ...string) {
 	}
 }
 
-// Load K9s aliases.
+// Load W2 aliases.
 func (a *Aliases) Load() error {
 	a.loadDefaultAliases()
 	return a.LoadFileAliases(K9sAlias)

@@ -1,9 +1,5 @@
 package config
 
-import (
-	"github.com/liupzmin/weewoe/internal/client"
-)
-
 const (
 	// SeverityLow tracks low severity.
 	SeverityLow SeverityLevel = iota
@@ -48,56 +44,4 @@ func validateRange(v int) bool {
 		return false
 	}
 	return true
-}
-
-// Threshold tracks threshold to alert user when excided.
-type Threshold map[string]*Severity
-
-// NewThreshold returns a new threshold.
-func NewThreshold() Threshold {
-	return Threshold{
-		"cpu":    NewSeverity(),
-		"memory": NewSeverity(),
-	}
-}
-
-// Validate a namespace is setup correctly.
-func (t Threshold) Validate(c client.Connection, ks KubeSettings) {
-	for _, k := range []string{"cpu", "memory"} {
-		v, ok := t[k]
-		if !ok {
-			t[k] = NewSeverity()
-		} else {
-			v.Validate()
-		}
-	}
-}
-
-// LevelFor returns a defcon level for the current state.
-func (t Threshold) LevelFor(k string, v int) SeverityLevel {
-	s, ok := t[k]
-	if !ok || v < 0 || v > 100 {
-		return SeverityLow
-	}
-	if v >= s.Critical {
-		return SeverityHigh
-	}
-	if v >= s.Warn {
-		return SeverityMedium
-	}
-
-	return SeverityLow
-}
-
-// SeverityColor returns an defcon level associated level.
-func (t *Threshold) SeverityColor(k string, v int) string {
-	// nolint:exhaustive
-	switch t.LevelFor(k, v) {
-	case SeverityHigh:
-		return "red"
-	case SeverityMedium:
-		return "orangered"
-	default:
-		return "green"
-	}
 }

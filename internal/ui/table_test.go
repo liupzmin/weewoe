@@ -11,7 +11,6 @@ import (
 	"github.com/liupzmin/weewoe/internal/render"
 	"github.com/liupzmin/weewoe/internal/ui"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func TestTableNew(t *testing.T) {
@@ -74,9 +73,6 @@ func (t *mockModel) ToggleToast()                       {}
 func (t *mockModel) AddListener(model.TableListener)    {}
 func (t *mockModel) RemoveListener(model.TableListener) {}
 func (t *mockModel) Watch(context.Context) error        { return nil }
-func (t *mockModel) Get(ctx context.Context, path string) (runtime.Object, error) {
-	return nil, nil
-}
 
 func (t *mockModel) Delete(ctx context.Context, path string, c, f bool) error {
 	return nil

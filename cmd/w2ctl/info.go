@@ -28,7 +28,7 @@ func printInfo() {
 	const fmat = "%-25s %s\n"
 
 	printLogo(color.Cyan)
-	printTuple(fmat, "Configuration", config.K9sConfigFile, color.Cyan)
+	printTuple(fmat, "Configuration", config.W2ConfigFile, color.Cyan)
 	printTuple(fmat, "Logs", config.DefaultLogFile, color.Cyan)
 	printTuple(fmat, "Screen Dumps", getScreenDumpDirForInfo(), color.Cyan)
 }
@@ -40,22 +40,22 @@ func printLogo(c color.Paint) {
 	fmt.Fprintln(out)
 }
 
-// getScreenDumpDirForInfo get default screen dump config dir or from config.K9sConfigFile configuration.
+// getScreenDumpDirForInfo get default screen dump config dir or from config.W2ConfigFile configuration.
 func getScreenDumpDirForInfo() string {
-	if config.K9sConfigFile == "" {
-		return config.K9sDefaultScreenDumpDir
+	if config.W2ConfigFile == "" {
+		return config.W2DefaultScreenDumpDir
 	}
 
-	f, err := os.ReadFile(config.K9sConfigFile)
+	f, err := os.ReadFile(config.W2ConfigFile)
 	if err != nil {
 		log.Error().Err(err).Msgf("Reads k9s config file %v", err)
-		return config.K9sDefaultScreenDumpDir
+		return config.W2DefaultScreenDumpDir
 	}
 
 	var cfg config.Config
 	if err := yaml.Unmarshal(f, &cfg); err != nil {
 		log.Error().Err(err).Msgf("Unmarshal k9s config %v", err)
-		return config.K9sDefaultScreenDumpDir
+		return config.W2DefaultScreenDumpDir
 	}
-	return cfg.K9s.GetScreenDumpDir()
+	return cfg.W2.GetScreenDumpDir()
 }

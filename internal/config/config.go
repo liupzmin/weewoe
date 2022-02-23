@@ -10,169 +10,89 @@ import (
 	"github.com/liupzmin/weewoe/internal/client"
 	"github.com/rs/zerolog/log"
 	"gopkg.in/yaml.v2"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
-// K9sConfig represents K9s configuration dir env var.
-const K9sConfig = "K9SCONFIG"
+// W2Config represents W2 configuration dir env var.
+const W2Config = "W2CONFIG"
 
 var (
-	// K9sConfigFile represents K9s config file location.
-	K9sConfigFile = filepath.Join(K9sHome(), "config.yml")
-	// K9sDefaultScreenDumpDir represents a default directory where K9s screen dumps will be persisted.
-	K9sDefaultScreenDumpDir = filepath.Join(os.TempDir(), fmt.Sprintf("k9s-screens-%s", MustK9sUser()))
+	// W2ConfigFile represents W2 config file location.
+	W2ConfigFile = filepath.Join(W2Home(), "config.yml")
+	// W2DefaultScreenDumpDir represents a default directory where W2 screen dumps will be persisted.
+	W2DefaultScreenDumpDir = filepath.Join(os.TempDir(), fmt.Sprintf("weewoo-screens-%s", MustW2User()))
 )
 
 type (
-	// KubeSettings exposes kubeconfig context information.
-	KubeSettings interface {
-		// CurrentContextName returns the name of the current context.
-		CurrentContextName() (string, error)
-
-		// CurrentClusterName returns the name of the current cluster.
-		CurrentClusterName() (string, error)
-
-		// CurrentNamespace returns the name of the current namespace.
-		CurrentNamespaceName() (string, error)
-
-		// ClusterNames() returns all available cluster names.
-		ClusterNames() (map[string]struct{}, error)
-	}
-
-	// Config tracks K9s configuration options.
+	// Config tracks W2 configuration options.
 	Config struct {
-		K9s      *K9s `yaml:"k9s"`
-		client   client.Connection
-		settings KubeSettings
+		W2 *W2 `yaml:"weewoo"`
 	}
 )
 
-// K9sHome returns k9s configs home directory.
-func K9sHome() string {
-	if env := os.Getenv(K9sConfig); env != "" {
+// W2Home returns k9s configs home directory.
+func W2Home() string {
+	if env := os.Getenv(W2Config); env != "" {
 		return env
 	}
 
-	xdgK9sHome, err := xdg.ConfigFile("k9s")
+	xdgW2Home, err := xdg.ConfigFile("w2")
 	if err != nil {
 		log.Fatal().Err(err).Msg("Unable to create configuration directory for k9s")
 	}
 
-	return xdgK9sHome
+	return xdgW2Home
 }
 
 // NewConfig creates a new default config.
-func NewConfig(ks KubeSettings) *Config {
-	return &Config{K9s: NewK9s(), settings: ks}
+func NewConfig() *Config {
+	return &Config{W2: NewWeeWoo()}
 }
 
 // Refine the configuration based on cli args.
-func (c *Config) Refine(flags *genericclioptions.ConfigFlags, k9sFlags *Flags, cfg *client.Config) error {
-	if isSet(flags.Context) {
-		c.K9s.CurrentContext = *flags.Context
-	} else {
-		context, err := cfg.CurrentContextName()
-		if err != nil {
-			return err
-		}
-		c.K9s.CurrentContext = context
-	}
-	log.Debug().Msgf("Active Context %q", c.K9s.CurrentContext)
-	if c.K9s.CurrentContext == "" {
-		return errors.New("Invalid kubeconfig context detected")
-	}
-	cc, err := cfg.Contexts()
-	if err != nil {
-		return err
-	}
-	context, ok := cc[c.K9s.CurrentContext]
-	if !ok {
-		return fmt.Errorf("The specified context %q does not exists in kubeconfig", c.K9s.CurrentContext)
-	}
-	c.K9s.CurrentCluster = context.Cluster
-	c.K9s.ActivateCluster(context.Namespace)
+func (c *Config) Refine() error {
 
 	var ns = client.DefaultNamespace
-	if k9sFlags != nil && IsBoolSet(k9sFlags.AllNamespaces) {
-		ns = client.NamespaceAll
-	} else if isSet(flags.Namespace) {
-		ns = *flags.Namespace
-	} else if isSet(flags.Context) {
-		ns = context.Namespace
-	} else {
-		ns = c.K9s.ActiveCluster().Namespace.Active
-	}
+
+	ns = c.W2.ActiveCluster().Namespace.Active
 
 	if err := c.SetActiveNamespace(ns); err != nil {
 		return err
 	}
-	flags.Namespace = &ns
 
-	if isSet(flags.ClusterName) {
-		c.K9s.CurrentCluster = *flags.ClusterName
-	}
-	EnsurePath(c.K9s.GetScreenDumpDir(), DefaultDirMod)
+	EnsurePath(c.W2.GetScreenDumpDir(), DefaultDirMod)
 
-	return nil
-}
-
-// Reset the context to the new current context/cluster.
-// if it does not exist.
-func (c *Config) Reset() {
-	c.K9s.CurrentContext, c.K9s.CurrentCluster = "", ""
-}
-
-// CurrentCluster fetch the configuration activeCluster.
-func (c *Config) CurrentCluster() *Cluster {
-	if c, ok := c.K9s.Clusters[c.K9s.CurrentCluster]; ok {
-		return c
-	}
 	return nil
 }
 
 // ActiveNamespace returns the active namespace in the current cluster.
 func (c *Config) ActiveNamespace() string {
-	if c.K9s.Clusters == nil {
+	if c.W2.Cluster == nil {
 		log.Warn().Msgf("No context detected returning default namespace")
 		return "default"
 	}
-	cl := c.CurrentCluster()
+	cl := c.W2.ActiveCluster()
 	if cl != nil && cl.Namespace != nil {
 		return cl.Namespace.Active
 	}
 	if cl == nil {
 		cl = NewCluster()
-		c.K9s.Clusters[c.K9s.CurrentCluster] = cl
-	}
-	if ns, err := c.settings.CurrentNamespaceName(); err == nil && ns != "" {
-		if cl.Namespace == nil {
-			cl.Namespace = NewNamespace()
-		}
-		cl.Namespace.Active = ns
-		return ns
+		c.W2.Cluster = cl
 	}
 
 	return "default"
 }
 
-// ValidateFavorites ensure favorite ns are legit.
-func (c *Config) ValidateFavorites() {
-	cl := c.K9s.ActiveCluster()
-	cl.Validate(c.client, c.settings)
-	cl.Namespace.Validate(c.client, c.settings)
-}
-
 // FavNamespaces returns fav namespaces in the current cluster.
 func (c *Config) FavNamespaces() []string {
-	cl := c.K9s.ActiveCluster()
+	cl := c.W2.ActiveCluster()
 
 	return cl.Namespace.Favorites
 }
 
 // SetActiveNamespace set the active namespace in the current cluster.
 func (c *Config) SetActiveNamespace(ns string) error {
-	if cl := c.K9s.ActiveCluster(); cl != nil {
-		return cl.Namespace.SetActive(ns, c.settings)
+	if cl := c.W2.ActiveCluster(); cl != nil {
+		return cl.Namespace.SetActive(ns)
 	}
 	err := errors.New("no active cluster. unable to set active namespace")
 	log.Error().Err(err).Msg("SetActiveNamespace")
@@ -182,13 +102,13 @@ func (c *Config) SetActiveNamespace(ns string) error {
 
 // ActiveView returns the active view in the current cluster.
 func (c *Config) ActiveView() string {
-	cl := c.K9s.ActiveCluster()
+	cl := c.W2.ActiveCluster()
 	if cl == nil {
 		return defaultView
 	}
 	cmd := cl.View.Active
-	if c.K9s.manualCommand != nil && *c.K9s.manualCommand != "" {
-		cmd = *c.K9s.manualCommand
+	if c.W2.manualCommand != nil && *c.W2.manualCommand != "" {
+		cmd = *c.W2.manualCommand
 	}
 
 	return cmd
@@ -196,71 +116,51 @@ func (c *Config) ActiveView() string {
 
 // SetActiveView set the currently cluster active view.
 func (c *Config) SetActiveView(view string) {
-	if cl := c.K9s.ActiveCluster(); cl != nil {
+	if cl := c.W2.ActiveCluster(); cl != nil {
 		cl.View.Active = view
 	}
 }
 
-// GetConnection return an api server connection.
-func (c *Config) GetConnection() client.Connection {
-	return c.client
-}
-
-// SetConnection set an api server connection.
-func (c *Config) SetConnection(conn client.Connection) {
-	c.client = conn
-}
-
-// Load K9s configuration from file.
+// Load W2 configuration from file.
 func (c *Config) Load(path string) error {
 	f, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
-	c.K9s = NewK9s()
+	c.W2 = NewWeeWoo()
 
 	var cfg Config
 	if err := yaml.Unmarshal(f, &cfg); err != nil {
 		return err
 	}
-	if cfg.K9s != nil {
-		c.K9s = cfg.K9s
+	if cfg.W2 != nil {
+		c.W2 = cfg.W2
 	}
-	if c.K9s.Logger == nil {
-		c.K9s.Logger = NewLogger()
+	if c.W2.Logger == nil {
+		c.W2.Logger = NewLogger()
 	}
 	return nil
 }
 
 // Save configuration to disk.
 func (c *Config) Save() error {
-	c.Validate()
-
-	return c.SaveFile(K9sConfigFile)
+	return c.SaveFile(W2ConfigFile)
 }
 
-// SaveFile K9s configuration to disk.
+// SaveFile W2 configuration to disk.
 func (c *Config) SaveFile(path string) error {
 	EnsurePath(path, DefaultDirMod)
 	cfg, err := yaml.Marshal(c)
 	if err != nil {
-		log.Error().Msgf("[Config] Unable to save K9s config file: %v", err)
+		log.Error().Msgf("[Config] Unable to save W2 config file: %v", err)
 		return err
 	}
 	return os.WriteFile(path, cfg, 0644)
 }
 
-// Validate the configuration.
-func (c *Config) Validate() {
-	c.K9s.Validate(c.client, c.settings)
-}
-
 // Dump debug...
 func (c *Config) Dump(msg string) {
-	log.Debug().Msgf("Current Cluster: %s\n", c.K9s.CurrentCluster)
-	for k, cl := range c.K9s.Clusters {
-		log.Debug().Msgf("K9s cluster: %s -- %s\n", k, cl.Namespace)
-	}
+	log.Debug().Msgf("W2 cluster: %s\n", c.W2.Cluster.Namespace)
 }
 
 // ----------------------------------------------------------------------------

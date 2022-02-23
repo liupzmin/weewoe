@@ -1,13 +1,11 @@
 package render
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/liupzmin/tview"
 
 	"github.com/gdamore/tcell/v2"
-	v1 "k8s.io/api/core/v1"
 )
 
 // Namespace renders a K8s Namespace to screen.
@@ -47,12 +45,5 @@ func (Namespace) Header(string) Header {
 // Render renders a K8s resource to screen.
 func (n Namespace) Render(o interface{}, _ string, rows *Rows) error {
 	// todo: 待处理
-	return nil
-}
-
-func (Namespace) diagnose(phase v1.NamespacePhase) error {
-	if phase != v1.NamespaceActive && phase != v1.NamespaceTerminating {
-		return errors.New("namespace not ready")
-	}
 	return nil
 }

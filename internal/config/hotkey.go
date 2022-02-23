@@ -7,15 +7,15 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// K9sHotKeys manages K9s hotKeys.
-var K9sHotKeys = filepath.Join(K9sHome(), "hotkey.yml")
+// K9sHotKeys manages W2 hotKeys.
+var K9sHotKeys = filepath.Join(W2Home(), "hotkey.yml")
 
 // HotKeys represents a collection of plugins.
 type HotKeys struct {
 	HotKey map[string]HotKey `yaml:"hotKey"`
 }
 
-// HotKey describes a K9s hotkey.
+// HotKey describes a W2 hotkey.
 type HotKey struct {
 	ShortCut    string `yaml:"shortCut"`
 	Description string `yaml:"description"`
@@ -29,7 +29,7 @@ func NewHotKeys() HotKeys {
 	}
 }
 
-// Load K9s plugins.
+// Load W2 plugins.
 func (h HotKeys) Load() error {
 	return h.LoadHotKeys(K9sHotKeys)
 }

@@ -1,8 +1,9 @@
 package view
 
 import (
-	"github.com/liupzmin/weewoe/internal/dao"
 	"time"
+
+	"github.com/liupzmin/weewoe/internal/dao"
 
 	"github.com/liupzmin/weewoe/internal/watch"
 
@@ -30,8 +31,7 @@ type Namespace struct {
 // NewNamespace returns a new viewer.
 func NewNamespace() ResourceViewer {
 	var n Namespace
-	// todo: 创建 grpc 连接
-	conn, err := grpc.Dial("192.168.18.237:9527", grpc.WithInsecure())
+	conn, err := grpc.Dial(w2Server, grpc.WithInsecure())
 	if err != nil {
 		log.Panic().Msgf("connect grpc server failed:", err)
 	}
@@ -62,7 +62,7 @@ func (n *Namespace) switchNs(app *App, model ui.Tabular, gvr, path string) {
 }
 
 func (n *Namespace) useNsCmd(evt *tcell.EventKey) *tcell.EventKey {
-	path := n.GetTable().GetSelectedItem()
+	path := n.GetTable().GetSelectedItem2()
 	if path == "" {
 		return nil
 	}
@@ -89,7 +89,7 @@ func (n *Namespace) useNamespace(fqn string) {
 }
 
 func (n *Namespace) decorate(data render.TableData) render.TableData {
-	if n.App().Conn() == nil || len(data.RowEvents) == 0 {
+	if len(data.RowEvents) == 0 {
 		return data
 	}
 

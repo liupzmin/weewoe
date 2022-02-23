@@ -1,9 +1,5 @@
 package config
 
-import (
-	"github.com/liupzmin/weewoe/internal/client"
-)
-
 const (
 	// DefaultLoggerTailCount tracks default log tail size.
 	DefaultLoggerTailCount = 100
@@ -33,7 +29,7 @@ func NewLogger() *Logger {
 }
 
 // Validate checks thresholds and make sure we're cool. If not use defaults.
-func (l *Logger) Validate(_ client.Connection, _ KubeSettings) {
+func (l *Logger) Validate() {
 	if l.TailCount <= 0 {
 		l.TailCount = DefaultLoggerTailCount
 	}

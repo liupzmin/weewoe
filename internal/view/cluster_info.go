@@ -6,11 +6,9 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/liupzmin/tview"
-	"github.com/liupzmin/weewoe/internal/client"
 	"github.com/liupzmin/weewoe/internal/config"
 	"github.com/liupzmin/weewoe/internal/model"
 	"github.com/liupzmin/weewoe/internal/render"
-	"github.com/rs/zerolog/log"
 )
 
 // ClusterInfoListener registers a listener for model changes.
@@ -64,8 +62,7 @@ func (c *ClusterInfo) TableDataChanged(data render.TableData) {
 	c.app.QueueUpdateDraw(func() {
 		c.Clear()
 		c.layout()
-		// todo: 修改 domain
-		row := c.setCell(0, fmt.Sprintf("[white::b]%s", "HFP"))
+		row := c.setCell(0, fmt.Sprintf("[white::b]%s", domain))
 		row = c.setCell(row, fmt.Sprintf("[aqua::b]%d", cl.Total))
 		row = c.setCell(row, fmt.Sprintf("[green::b]%d", cl.Healthy))
 		row = c.setCell(row, fmt.Sprintf("[red::b]%d", cl.Killed))
@@ -76,19 +73,6 @@ func (c *ClusterInfo) TableDataChanged(data render.TableData) {
 }
 
 func (c *ClusterInfo) TableLoadFailed(_ error) {}
-
-func (c *ClusterInfo) hasMetrics() bool {
-	mx := c.app.Conn().HasMetrics()
-	if mx {
-		auth, err := c.app.Conn().CanI("", "metrics.k8s.io/v1beta1/nodes", client.ListAccess)
-		if err != nil {
-			log.Warn().Err(err).Msgf("No nodes metrics access")
-		}
-		mx = auth
-	}
-
-	return mx
-}
 
 // AddListener adds a new model listener.
 func (c *ClusterInfo) AddListener(l ClusterInfoListener) {
@@ -177,25 +161,6 @@ func (c *ClusterInfo) count(data render.TableData) model.Cluster {
 func (c *ClusterInfo) fireChanged(cl model.Cluster) {
 	for _, l := range c.listeners {
 		l.ClusterInfoChanged(cl)
-	}
-}
-
-const defconFmt = "%s %s level!"
-
-func (c *ClusterInfo) setDefCon(cpu, mem int) {
-	var set bool
-	l := c.app.Config.K9s.Thresholds.LevelFor("cpu", cpu)
-	if l > config.SeverityLow {
-		c.app.Status(flashLevel(l), fmt.Sprintf(defconFmt, flashMessage(l), "CPU"))
-		set = true
-	}
-	l = c.app.Config.K9s.Thresholds.LevelFor("memory", mem)
-	if l > config.SeverityLow {
-		c.app.Status(flashLevel(l), fmt.Sprintf(defconFmt, flashMessage(l), "Memory"))
-		set = true
-	}
-	if !set && !c.app.IsBenchmarking() {
-		c.app.ClearStatus(true)
 	}
 }
 

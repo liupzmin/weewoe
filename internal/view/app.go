@@ -12,6 +12,9 @@ import (
 	"syscall"
 	"time"
 
+	pb "github.com/liupzmin/weewoe/proto"
+	"google.golang.org/grpc"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/liupzmin/tview"
 	"github.com/liupzmin/weewoe/internal"
@@ -24,12 +27,15 @@ import (
 )
 
 // ExitStatus indicates UI exit conditions.
-var ExitStatus = ""
+var (
+	ExitStatus = ""
+	w2Server   = ""
+	domain     = ""
+)
 
 const (
 	splashDelay      = 1 * time.Second
 	clusterInfoWidth = 50
-	clusterInfoPad   = 15
 )
 
 // App represents an application view.
@@ -47,10 +53,11 @@ type App struct {
 	showCrumbs    bool
 }
 
-// NewApp returns a K9s app instance.
+// NewApp returns a W2 app instance.
 func NewApp(cfg *config.Config) *App {
 	a := App{
-		App:           ui.NewApp(cfg, cfg.K9s.CurrentContext),
+		// todo:
+		App:           ui.NewApp(cfg, ""),
 		cmdHistory:    model.NewHistory(model.MaxHistory),
 		filterHistory: model.NewHistory(model.MaxHistory),
 		Content:       NewPageStack(),
@@ -59,6 +66,8 @@ func NewApp(cfg *config.Config) *App {
 	a.Views()["statusIndicator"] = ui.NewStatusIndicator(a.App, a.Styles)
 	a.Views()["clusterInfo"] = NewClusterInfo(&a)
 	a.clusterInfo().AddListener(a.Views()["statusIndicator"].(*ui.StatusIndicator))
+
+	w2Server = cfg.W2.GRPCServer()
 
 	return &a
 }
@@ -92,7 +101,27 @@ func (a *App) Init(version string, rate int) error {
 	a.layout(ctx)
 	a.initSignals()
 
+	d, err := a.getDomain(w2Server)
+	if err != nil {
+		log.Error().Msgf("get domain failed: %s", err)
+	} else {
+		domain = d
+	}
+
 	return nil
+}
+
+func (a *App) getDomain(addr string) (string, error) {
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		return "", err
+	}
+	c := pb.NewStateClient(conn)
+	d, err := c.GetDomain(context.TODO(), &pb.Empty{})
+	if err != nil {
+		return "", err
+	}
+	return d.Name, nil
 }
 
 func (a *App) layout(ctx context.Context) {
@@ -102,14 +131,14 @@ func (a *App) layout(ctx context.Context) {
 	main := tview.NewFlex().SetDirection(tview.FlexRow)
 	main.AddItem(a.statusIndicator(), 1, 1, false)
 	main.AddItem(a.Content, 0, 10, true)
-	if !a.Config.K9s.IsCrumbsless() {
+	if !a.Config.W2.IsCrumbsless() {
 		main.AddItem(a.Crumbs(), 1, 1, false)
 	}
 	main.AddItem(flash, 1, 1, false)
 
 	a.Main.AddPage("main", main, true, false)
 	a.Main.AddPage("splash", ui.NewSplash(a.Styles, a.version), true, true)
-	a.toggleHeader(!a.Config.K9s.IsHeadless(), !a.Config.K9s.IsLogoless())
+	a.toggleHeader(!a.Config.W2.IsHeadless(), !a.Config.W2.IsLogoless())
 }
 
 func (a *App) initSignals() {

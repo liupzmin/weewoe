@@ -8,7 +8,7 @@ import (
 )
 
 // K9sViewConfigFile represents the location for the views configuration.
-var K9sViewConfigFile = filepath.Join(K9sHome(), "views.yml")
+var K9sViewConfigFile = filepath.Join(W2Home(), "views.yml")
 
 // ViewConfigListener represents a view config listener.
 type ViewConfigListener interface {

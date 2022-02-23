@@ -26,8 +26,7 @@ type Process struct {
 func NewProcess() ResourceViewer {
 	var p Process
 
-	// todo: 创建 grpc 连接
-	conn, err := grpc.Dial("192.168.18.237:9527", grpc.WithInsecure())
+	conn, err := grpc.Dial(w2Server, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("connect grpc server failed: %s", err)
 	}
@@ -66,12 +65,12 @@ func (p *Process) waitToDo(data render.TableData) render.TableData {
 
 func (p *Process) bindDangerousKeys(aa ui.KeyActions) {
 	aa.Add(ui.KeyActions{
-		tcell.KeyCtrlK: ui.NewKeyAction("Kill", p.killCmd, true),
+		tcell.KeyCtrlK: ui.NewKeyAction("Kill", p.killCmd, false),
 	})
 }
 
 func (p *Process) bindKeys(aa ui.KeyActions) {
-	if !p.App().Config.K9s.IsReadOnly() {
+	if !p.App().Config.W2.IsReadOnly() {
 		p.bindDangerousKeys(aa)
 	}
 

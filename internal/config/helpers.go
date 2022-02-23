@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/rs/zerolog/log"
-	v1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -26,19 +25,8 @@ func InList(ll []string, n string) bool {
 	return false
 }
 
-// InNSList check if ns is in an ns collection.
-func InNSList(nn []interface{}, ns string) bool {
-	ss := make([]string, len(nn))
-	for i, n := range nn {
-		if nsp, ok := n.(v1.Namespace); ok {
-			ss[i] = nsp.Name
-		}
-	}
-	return InList(ss, ns)
-}
-
-// MustK9sUser establishes current user identity or fail.
-func MustK9sUser() string {
+// MustW2User establishes current user identity or fail.
+func MustW2User() string {
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Die on retrieving user info")

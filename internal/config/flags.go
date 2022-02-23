@@ -15,14 +15,20 @@ const (
 
 	// DefaultCommand represents the default command to run.
 	DefaultCommand = ""
+
+	DefaultHost = "127.0.0.1"
+
+	DefaultPort = "9527"
 )
 
-// DefaultLogFile represents the default K9s log file.
-var DefaultLogFile = filepath.Join(os.TempDir(), fmt.Sprintf("k9s-%s.log", MustK9sUser()))
+// DefaultLogFile represents the default W2 log file.
+var DefaultLogFile = filepath.Join(os.TempDir(), fmt.Sprintf("w2-%s.log", MustW2User()))
 
-// Flags represents K9s configuration flags.
+// Flags represents W2 configuration flags.
 type Flags struct {
 	RefreshRate   *int
+	Host          *string
+	Port          *string
 	LogLevel      *string
 	LogFile       *string
 	Headless      *bool
@@ -39,6 +45,8 @@ type Flags struct {
 func NewFlags() *Flags {
 	return &Flags{
 		RefreshRate:   intPtr(DefaultRefreshRate),
+		Host:          strPtr(DefaultHost),
+		Port:          strPtr(DefaultPort),
 		LogLevel:      strPtr(DefaultLogLevel),
 		LogFile:       strPtr(DefaultLogFile),
 		Headless:      boolPtr(false),
@@ -48,7 +56,7 @@ func NewFlags() *Flags {
 		ReadOnly:      boolPtr(false),
 		Write:         boolPtr(false),
 		Crumbsless:    boolPtr(false),
-		ScreenDumpDir: strPtr(K9sDefaultScreenDumpDir),
+		ScreenDumpDir: strPtr(W2DefaultScreenDumpDir),
 	}
 }
 

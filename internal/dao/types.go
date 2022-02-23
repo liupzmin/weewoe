@@ -6,42 +6,7 @@ import (
 	"time"
 
 	"github.com/liupzmin/weewoe/internal/render"
-
-	"github.com/liupzmin/weewoe/internal/client"
-	"github.com/liupzmin/weewoe/internal/watch"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/informers"
-	restclient "k8s.io/client-go/rest"
 )
-
-// Factory represents a resource factory.
-type Factory interface {
-	// Client retrieves an api client.
-	Client() client.Connection
-
-	// Get fetch a given resource.
-	Get(gvr, path string, wait bool, sel labels.Selector) (runtime.Object, error)
-
-	// List fetch a collection of resources.
-	List(gvr, ns string, wait bool, sel labels.Selector) ([]runtime.Object, error)
-
-	// ForResource fetch an informer for a given resource.
-	ForResource(ns, gvr string) (informers.GenericInformer, error)
-
-	// CanForResource fetch an informer for a given resource if authorized
-	CanForResource(ns, gvr string, verbs []string) (informers.GenericInformer, error)
-
-	// WaitForCacheSync synchronize the cache.
-	WaitForCacheSync()
-
-	// DeleteForwarder deletes a pod forwarder.
-	DeleteForwarder(path string)
-
-	// Forwards returns all portforwards.
-	Forwarders() watch.Forwarders
-}
 
 type FactoryFn func() MyFactory
 
@@ -51,28 +16,28 @@ type MyFactory interface {
 	Terminate()
 }
 
-// Getter represents a resource getter.
-type Getter interface {
-	// Get return a given resource.
-	Get(ctx context.Context, path string) (runtime.Object, error)
-}
+//// Getter represents a resource getter.
+//type Getter interface {
+//	// Get return a given resource.
+//	Get(ctx context.Context, path string) (runtime.Object, error)
+//}
+//
+//// Lister represents a resource lister.
+//type Lister interface {
+//	// List returns a resource collection.
+//	List(ctx context.Context, ns string) ([]runtime.Object, error)
+//}
 
-// Lister represents a resource lister.
-type Lister interface {
-	// List returns a resource collection.
-	List(ctx context.Context, ns string) ([]runtime.Object, error)
-}
-
-// Accessor represents an accessible k8s resource.
-type Accessor interface {
-	Lister
-	Getter
-
-	// Init the resource with a factory object.
-	Init(MyFactory, string)
-
-	Cat() string
-}
+//// Accessor represents an accessible k8s resource.
+//type Accessor interface {
+//	Lister
+//	Getter
+//
+//	// Init the resource with a factory object.
+//	Init(MyFactory, string)
+//
+//	Cat() string
+//}
 
 // DrainOptions tracks drain attributes.
 type DrainOptions struct {
@@ -137,8 +102,8 @@ type Runnable interface {
 	Run(path string) error
 }
 
-// Logger represents a resource that exposes logs.
-type Logger interface {
-	// Logs tails a resource logs.
-	Logs(path string, opts *v1.PodLogOptions) (*restclient.Request, error)
-}
+//// Logger represents a resource that exposes logs.
+//type Logger interface {
+//	// Logs tails a resource logs.
+//	Logs(path string, opts *v1.PodLogOptions) (*restclient.Request, error)
+//}

@@ -15,21 +15,17 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/cobra"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
 const (
-	appName      = "k9s"
-	shortAppDesc = "A graphical CLI for your Kubernetes cluster management."
-	longAppDesc  = "K9s is a CLI to view and manage your Kubernetes clusters."
+	appName      = "w2ctl"
+	shortAppDesc = "A graphical CLI for your distributed processes management."
+	longAppDesc  = "w2ctl is a CLI to view and manage your distributed processes."
 )
-
-var _ config.KubeSettings = (*client.Config)(nil)
 
 var (
 	version, commit, date = "dev", "dev", client.NA
-	k9sFlags              *config.Flags
-	k8sFlags              *genericclioptions.ConfigFlags
+	w2Flags               *config.Flags
 
 	rootCmd = &cobra.Command{
 		Use:   appName,
@@ -43,8 +39,7 @@ var (
 
 func init() {
 	rootCmd.AddCommand(versionCmd(), infoCmd())
-	initK9sFlags()
-	initK8sFlags()
+	initW2Flags()
 }
 
 // Execute root command.
@@ -58,9 +53,9 @@ func Execute() {
 }
 
 func run(cmd *cobra.Command, args []string) {
-	config.EnsurePath(*k9sFlags.LogFile, config.DefaultDirMod)
+	config.EnsurePath(*w2Flags.LogFile, config.DefaultDirMod)
 	mod := os.O_CREATE | os.O_APPEND | os.O_WRONLY
-	file, err := os.OpenFile(*k9sFlags.LogFile, mod, config.DefaultFileMod)
+	file, err := os.OpenFile(*w2Flags.LogFile, mod, config.DefaultFileMod)
 	if err != nil {
 		panic(err)
 	}
@@ -81,9 +76,9 @@ func run(cmd *cobra.Command, args []string) {
 
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: file})
 
-	zerolog.SetGlobalLevel(parseLevel(*k9sFlags.LogLevel))
+	zerolog.SetGlobalLevel(parseLevel(*w2Flags.LogLevel))
 	app := view.NewApp(loadConfiguration())
-	if err := app.Init(version, *k9sFlags.RefreshRate); err != nil {
+	if err := app.Init(version, *w2Flags.RefreshRate); err != nil {
 		panic(fmt.Sprintf("app init failed -- %v", err))
 	}
 	if err := app.Run(); err != nil {
@@ -95,37 +90,38 @@ func run(cmd *cobra.Command, args []string) {
 }
 
 func loadConfiguration() *config.Config {
-	log.Info().Msg("🐶 K9s starting up...")
+	log.Info().Msg("🐶 W2 starting up...")
 
-	// Load K9s config file...
-	k8sCfg := client.NewConfig(k8sFlags)
-	k9sCfg := config.NewConfig(k8sCfg)
+	// Load W2 config file...
+	w2Cfg := config.NewConfig()
 
-	if err := k9sCfg.Load(config.K9sConfigFile); err != nil {
-		log.Warn().Msg("Unable to locate K9s config. Generating new configuration...")
+	if err := w2Cfg.Load(config.W2ConfigFile); err != nil {
+		log.Warn().Msg("Unable to locate W2 config. Generating new configuration...")
 	}
 
-	if *k9sFlags.RefreshRate != config.DefaultRefreshRate {
-		k9sCfg.K9s.OverrideRefreshRate(*k9sFlags.RefreshRate)
+	if *w2Flags.RefreshRate != config.DefaultRefreshRate {
+		w2Cfg.W2.OverrideRefreshRate(*w2Flags.RefreshRate)
 	}
 
-	k9sCfg.K9s.OverrideHeadless(*k9sFlags.Headless)
-	k9sCfg.K9s.OverrideLogoless(*k9sFlags.Logoless)
-	k9sCfg.K9s.OverrideCrumbsless(*k9sFlags.Crumbsless)
-	k9sCfg.K9s.OverrideReadOnly(*k9sFlags.ReadOnly)
-	k9sCfg.K9s.OverrideWrite(*k9sFlags.Write)
-	k9sCfg.K9s.OverrideCommand(*k9sFlags.Command)
-	k9sCfg.K9s.OverrideScreenDumpDir(*k9sFlags.ScreenDumpDir)
+	w2Cfg.W2.OverrideHost(*w2Flags.Host)
+	w2Cfg.W2.OverridePort(*w2Flags.Port)
+	w2Cfg.W2.OverrideHeadless(*w2Flags.Headless)
+	w2Cfg.W2.OverrideLogoless(*w2Flags.Logoless)
+	w2Cfg.W2.OverrideCrumbsless(*w2Flags.Crumbsless)
+	w2Cfg.W2.OverrideReadOnly(*w2Flags.ReadOnly)
+	w2Cfg.W2.OverrideWrite(*w2Flags.Write)
+	w2Cfg.W2.OverrideCommand(*w2Flags.Command)
+	w2Cfg.W2.OverrideScreenDumpDir(*w2Flags.ScreenDumpDir)
 
-	if err := k9sCfg.Refine(k8sFlags, k9sFlags, k8sCfg); err != nil {
+	if err := w2Cfg.Refine(); err != nil {
 		log.Error().Err(err).Msgf("refine failed")
 	}
 
-	if err := k9sCfg.Save(); err != nil {
+	if err := w2Cfg.Save(); err != nil {
 		log.Error().Err(err).Msg("Config save")
 	}
 
-	return k9sCfg
+	return w2Cfg
 }
 
 func parseLevel(level string) zerolog.Level {
@@ -145,176 +141,85 @@ func parseLevel(level string) zerolog.Level {
 	}
 }
 
-func initK9sFlags() {
-	k9sFlags = config.NewFlags()
-	rootCmd.Flags().IntVarP(
-		k9sFlags.RefreshRate,
+func initW2Flags() {
+	w2Flags = config.NewFlags()
+	rootCmd.Flags().StringVarP(
+		w2Flags.Host,
+		"server", "s",
+		config.DefaultHost,
+		"Specify the server to connect",
+	)
+	rootCmd.Flags().StringVarP(
+		w2Flags.Port,
+		"port", "p",
+		config.DefaultPort,
+		"Specify the server port",
+	)
+	/*rootCmd.Flags().IntVarP(
+		w2Flags.RefreshRate,
 		"refresh", "r",
 		config.DefaultRefreshRate,
 		"Specify the default refresh rate as an integer (sec)",
-	)
+	)*/
 	rootCmd.Flags().StringVarP(
-		k9sFlags.LogLevel,
+		w2Flags.LogLevel,
 		"logLevel", "l",
 		config.DefaultLogLevel,
 		"Specify a log level (info, warn, debug, trace, error)",
 	)
 	rootCmd.Flags().StringVarP(
-		k9sFlags.LogFile,
+		w2Flags.LogFile,
 		"logFile", "",
 		config.DefaultLogFile,
 		"Specify the log file",
 	)
 	rootCmd.Flags().BoolVar(
-		k9sFlags.Headless,
+		w2Flags.Headless,
 		"headless",
 		false,
-		"Turn K9s header off",
+		"Turn W2 header off",
 	)
 	rootCmd.Flags().BoolVar(
-		k9sFlags.Logoless,
+		w2Flags.Logoless,
 		"logoless",
 		false,
-		"Turn K9s logo off",
+		"Turn W2 logo off",
 	)
 	rootCmd.Flags().BoolVar(
-		k9sFlags.Crumbsless,
+		w2Flags.Crumbsless,
 		"crumbsless",
 		false,
-		"Turn K9s crumbs off",
+		"Turn W2 crumbs off",
 	)
 	rootCmd.Flags().BoolVarP(
-		k9sFlags.AllNamespaces,
+		w2Flags.AllNamespaces,
 		"all-namespaces", "A",
 		false,
-		"Launch K9s in all namespaces",
+		"Launch W2 in all namespaces",
 	)
-	rootCmd.Flags().StringVarP(
-		k9sFlags.Command,
+	/*rootCmd.Flags().StringVarP(
+		w2Flags.Command,
 		"command", "c",
 		config.DefaultCommand,
 		"Overrides the default resource to load when the application launches",
-	)
+	)*/
 	rootCmd.Flags().BoolVar(
-		k9sFlags.ReadOnly,
+		w2Flags.ReadOnly,
 		"readonly",
 		false,
 		"Sets readOnly mode by overriding readOnly configuration setting",
 	)
 	rootCmd.Flags().BoolVar(
-		k9sFlags.Write,
+		w2Flags.Write,
 		"write",
 		false,
 		"Sets write mode by overriding the readOnly configuration setting",
 	)
 	rootCmd.Flags().StringVar(
-		k9sFlags.ScreenDumpDir,
+		w2Flags.ScreenDumpDir,
 		"screen-dump-dir",
 		"",
 		"Sets a path to a dir for a screen dumps",
 	)
 	rootCmd.Flags()
-}
-
-func initK8sFlags() {
-	k8sFlags = genericclioptions.NewConfigFlags(client.UsePersistentConfig)
-
-	rootCmd.Flags().StringVar(
-		k8sFlags.KubeConfig,
-		"kubeconfig",
-		"",
-		"Path to the kubeconfig file to use for CLI requests",
-	)
-
-	rootCmd.Flags().StringVar(
-		k8sFlags.Timeout,
-		"request-timeout",
-		"",
-		"The length of time to wait before giving up on a single server request",
-	)
-
-	rootCmd.Flags().StringVar(
-		k8sFlags.Context,
-		"context",
-		"",
-		"The name of the kubeconfig context to use",
-	)
-
-	rootCmd.Flags().StringVar(
-		k8sFlags.ClusterName,
-		"cluster",
-		"",
-		"The name of the kubeconfig cluster to use",
-	)
-
-	rootCmd.Flags().StringVar(
-		k8sFlags.AuthInfoName,
-		"user",
-		"",
-		"The name of the kubeconfig user to use",
-	)
-
-	rootCmd.Flags().StringVarP(
-		k8sFlags.Namespace,
-		"namespace",
-		"n",
-		"",
-		"If present, the namespace scope for this CLI request",
-	)
-
-	initAsFlags()
-	initCertFlags()
-}
-
-func initAsFlags() {
-	rootCmd.Flags().StringVar(
-		k8sFlags.Impersonate,
-		"as",
-		"",
-		"Username to impersonate for the operation",
-	)
-
-	rootCmd.Flags().StringArrayVar(
-		k8sFlags.ImpersonateGroup,
-		"as-group",
-		[]string{},
-		"Group to impersonate for the operation",
-	)
-}
-
-func initCertFlags() {
-	rootCmd.Flags().BoolVar(
-		k8sFlags.Insecure,
-		"insecure-skip-tls-verify",
-		false,
-		"If true, the server's caCertFile will not be checked for validity",
-	)
-
-	rootCmd.Flags().StringVar(
-		k8sFlags.CAFile,
-		"certificate-authority",
-		"",
-		"Path to a cert file for the certificate authority",
-	)
-
-	rootCmd.Flags().StringVar(
-		k8sFlags.KeyFile,
-		"client-key",
-		"",
-		"Path to a client key file for TLS",
-	)
-
-	rootCmd.Flags().StringVar(
-		k8sFlags.CertFile,
-		"client-certificate",
-		"",
-		"Path to a client certificate file for TLS",
-	)
-
-	rootCmd.Flags().StringVar(
-		k8sFlags.BearerToken,
-		"token",
-		"",
-		"Bearer token for authentication to the API server",
-	)
 }

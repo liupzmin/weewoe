@@ -38,10 +38,7 @@ func (a Alert) TableDataChanged(rows render.Rows) {
 	a.PortAlert(ns.Groups())
 }
 
-func (a Alert) TableLoadFailed(err error) {
-	//TODO implement me
-	panic("implement me")
-}
+func (a Alert) TableLoadFailed(err error) {}
 
 func (a Alert) Chan() chan []byte { return nil }
 

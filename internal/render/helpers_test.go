@@ -2,11 +2,9 @@ package render
 
 import (
 	"testing"
-	"time"
 
 	"github.com/liupzmin/weewoe/internal/client"
 	"github.com/stretchr/testify/assert"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestSortLabels(t *testing.T) {
@@ -82,45 +80,6 @@ func BenchmarkDurationToSecond(b *testing.B) {
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		durationToSeconds(t)
-	}
-}
-
-func TestToAge(t *testing.T) {
-	uu := map[string]struct {
-		t time.Time
-		e string
-	}{
-		"good": {
-			t: time.Now().Add(-10 * time.Second),
-			e: "10",
-		},
-	}
-
-	for k := range uu {
-		uc := uu[k]
-		t.Run(k, func(t *testing.T) {
-			assert.Equal(t, uc.e, toAge(metav1.Time{Time: uc.t})[:2])
-		})
-	}
-}
-
-func TestToAgeHuma(t *testing.T) {
-	uu := map[string]struct {
-		t time.Time
-		e string
-	}{
-		"good": {
-			t: time.Now().Add(-10 * time.Second),
-			e: "10",
-		},
-	}
-
-	for k := range uu {
-		uc := uu[k]
-		t.Run(k, func(t *testing.T) {
-			ti := toAge(metav1.Time{Time: uc.t})
-			assert.Equal(t, uc.e, toAgeHuman(ti)[:2])
-		})
 	}
 }
 
@@ -309,23 +268,6 @@ func TestIn(t *testing.T) {
 		uc := uu[k]
 		t.Run(k, func(t *testing.T) {
 			assert.Equal(t, uc.e, in(uc.a, uc.v))
-		})
-	}
-}
-
-func TestMetaFQN(t *testing.T) {
-	uu := map[string]struct {
-		m metav1.ObjectMeta
-		e string
-	}{
-		"full": {metav1.ObjectMeta{Namespace: "fred", Name: "blee"}, "fred/blee"},
-		"nons": {metav1.ObjectMeta{Name: "blee"}, "-/blee"},
-	}
-
-	for k := range uu {
-		uc := uu[k]
-		t.Run(k, func(t *testing.T) {
-			assert.Equal(t, uc.e, client.MetaFQN(uc.m))
 		})
 	}
 }

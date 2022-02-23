@@ -10,8 +10,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// K9sStylesFile represents K9s skins file location.
-var K9sStylesFile = filepath.Join(K9sHome(), "skin.yml")
+// K9sStylesFile represents W2 skins file location.
+var K9sStylesFile = filepath.Join(W2Home(), "skin.yml")
 
 // StyleListener represents a skin's listener.
 type StyleListener interface {
@@ -26,13 +26,13 @@ type (
 	// Colors tracks multiple colors.
 	Colors []Color
 
-	// Styles tracks K9s styling options.
+	// Styles tracks W2 styling options.
 	Styles struct {
 		K9s       Style `yaml:"k9s"`
 		listeners []StyleListener
 	}
 
-	// Style tracks K9s styles.
+	// Style tracks W2 styles.
 	Style struct {
 		Body   Body   `yaml:"body"`
 		Prompt Prompt `yaml:"prompt"`
@@ -539,7 +539,7 @@ func (s *Styles) Views() Views {
 	return s.K9s.Views
 }
 
-// Load K9s configuration from file.
+// Load W2 configuration from file.
 func (s *Styles) Load(path string) error {
 	f, err := os.ReadFile(path)
 	if err != nil {

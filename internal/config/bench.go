@@ -11,12 +11,12 @@ import (
 var K9sBench = "bench"
 
 type (
-	// Bench tracks K9s styling options.
+	// Bench tracks W2 styling options.
 	Bench struct {
 		Benchmarks *Benchmarks `yaml:"benchmarks"`
 	}
 
-	// Benchmarks tracks K9s benchmarks configuration.
+	// Benchmarks tracks W2 benchmarks configuration.
 	Benchmarks struct {
 		Defaults   Benchmark              `yaml:"defaults"`
 		Services   map[string]BenchConfig `yam':"services"`
@@ -94,7 +94,7 @@ func (s *Bench) Reload(path string) error {
 	return s.load(path)
 }
 
-// Load K9s benchmark configs from file.
+// Load W2 benchmark configs from file.
 func (s *Bench) load(path string) error {
 	f, err := os.ReadFile(path)
 	if err != nil {

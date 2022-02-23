@@ -2,19 +2,10 @@ package model
 
 import (
 	"context"
-	"time"
 
 	"github.com/liupzmin/tview"
-	"github.com/liupzmin/weewoe/internal/client"
-	"github.com/liupzmin/weewoe/internal/dao"
 	"github.com/liupzmin/weewoe/internal/render"
 	"github.com/sahilm/fuzzy"
-	"k8s.io/apimachinery/pkg/runtime"
-)
-
-const (
-	maxReaderRetryInterval   = 2 * time.Minute
-	defaultReaderRefreshRate = 5 * time.Second
 )
 
 type Cluster struct {
@@ -45,7 +36,6 @@ type ResourceViewer interface {
 
 // Igniter represents a runnable view.
 type Igniter interface {
-	// Start starts a component.
 	Init(ctx context.Context) error
 
 	// Start starts a component.
@@ -101,32 +91,6 @@ type Renderer interface {
 	ColorerFunc() render.ColorerFunc
 }
 
-// Cruder performs crud operations.
-type Cruder interface {
-	// List returns a collection of resources.
-	List(ctx context.Context, ns string) ([]runtime.Object, error)
-
-	// Get returns a resource instance.
-	Get(ctx context.Context, path string) (runtime.Object, error)
-}
-
-// Lister represents a resource lister.
-type Lister interface {
-	Cruder
-
-	// Init initializes a resource.
-	Init(ns, gvr string, f dao.Factory)
-}
-
-// Describer represents a resource describer.
-type Describer interface {
-	// ToYAML return resource yaml.
-	ToYAML(ctx context.Context, path string) (string, error)
-
-	// Describe returns a resource description.
-	Describe(client client.Connection, gvr, path string) (string, error)
-}
-
 // TreeRenderer represents an xray node.
 type TreeRenderer interface {
 	Render(ctx context.Context, ns string, o interface{}) error
@@ -134,7 +98,7 @@ type TreeRenderer interface {
 
 // ResourceMeta represents model info about a resource.
 type ResourceMeta struct {
-	DAO          dao.Accessor
+	//DAO          dao.Accessor
 	Renderer     Renderer
 	TreeRenderer TreeRenderer
 }

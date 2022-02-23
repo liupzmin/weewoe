@@ -28,8 +28,8 @@ func (n *Node) bindDangerousKeys(aa ui.KeyActions) {
 		ui.KeyU: ui.NewKeyAction("Uncordon", n.toggleCordonCmd(false), true),
 		ui.KeyR: ui.NewKeyAction("Drain", n.drainCmd, true),*/
 	})
-	cl := n.App().Config.K9s.CurrentCluster
-	if n.App().Config.K9s.Clusters[cl].FeatureGates.NodeShell {
+
+	if n.App().Config.W2.Cluster.FeatureGates.NodeShell {
 		aa.Add(ui.KeyActions{
 			//ui.KeyS: ui.NewKeyAction("Shell", n.sshCmd, true),
 		})
@@ -39,7 +39,7 @@ func (n *Node) bindDangerousKeys(aa ui.KeyActions) {
 func (n *Node) bindKeys(aa ui.KeyActions) {
 	aa.Delete(ui.KeySpace, tcell.KeyCtrlSpace)
 
-	if !n.App().Config.K9s.IsReadOnly() {
+	if !n.App().Config.W2.IsReadOnly() {
 		n.bindDangerousKeys(aa)
 	}
 

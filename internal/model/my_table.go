@@ -12,10 +12,12 @@ import (
 	"github.com/liupzmin/weewoe/internal/dao"
 	"github.com/liupzmin/weewoe/internal/render"
 	"github.com/rs/zerolog/log"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
-const REFRESH int64 = 1
+const (
+	REFRESH int64 = 1
+	MAIL    int64 = 2
+)
 
 // MyTable represents a table model.
 type MyTable struct {
@@ -29,6 +31,19 @@ type MyTable struct {
 	labelFilter string
 	r           <-chan render.Rows
 	once        sync.Once
+}
+
+func (t *MyTable) SendCommand(ctx context.Context, key int64) error {
+	factory, ok := ctx.Value(internal.KeyFactory).(dao.MyFactory)
+	if !ok {
+		log.Panic().Msgf(""+
+			"expected Factory in context but got %T", ctx.Value(internal.KeyFactory))
+	}
+	err := factory.SendCommand(key)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // NewMyTable returns a new table model.
@@ -85,11 +100,6 @@ func (t *MyTable) Watch(ctx context.Context) error {
 func (t *MyTable) Refresh(ctx context.Context) error {
 	t.reload(ctx)
 	return nil
-}
-
-// Get returns a resource instance if found, else an error.
-func (t *MyTable) Get(ctx context.Context, path string) (runtime.Object, error) {
-	return nil, nil
 }
 
 // Delete deletes a resource.

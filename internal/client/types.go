@@ -1,16 +1,5 @@
 package client
 
-import (
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/version"
-	"k8s.io/client-go/discovery/cached/disk"
-	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/kubernetes"
-	restclient "k8s.io/client-go/rest"
-	mv1beta1 "k8s.io/metrics/pkg/apis/metrics/v1beta1"
-	versioned "k8s.io/metrics/pkg/client/clientset/versioned"
-)
-
 const (
 	// NA Not available.
 	NA = "n/a"
@@ -63,72 +52,10 @@ var (
 	ReadAllAccess = []string{GetVerb, ListVerb, WatchVerb}
 )
 
-// ContainersMetrics tracks containers metrics.
-type ContainersMetrics map[string]*mv1beta1.ContainerMetrics
-
-// NodesMetricsMap tracks node metrics.
-type NodesMetricsMap map[string]*mv1beta1.NodeMetrics
-
-// PodsMetricsMap tracks pod metrics.
-type PodsMetricsMap map[string]*mv1beta1.PodMetrics
-
 // Authorizer checks what a user can or cannot do to a resource.
 type Authorizer interface {
 	// CanI returns true if the user can use these actions for a given resource.
 	CanI(ns, gvr string, verbs []string) (bool, error)
-}
-
-// Connection represents a Kubernetes apiserver connection.
-type Connection interface {
-	Authorizer
-
-	// Config returns current config.
-	Config() *Config
-
-	// ConnectionOK checks api server connection status.
-	ConnectionOK() bool
-
-	// Dial connects to api server.
-	Dial() (kubernetes.Interface, error)
-
-	// DialLogs connects to api server for logs.
-	DialLogs() (kubernetes.Interface, error)
-
-	// SwitchContext switches cluster based on context.
-	SwitchContext(ctx string) error
-
-	// CachedDiscovery connects to discovery client.
-	CachedDiscovery() (*disk.CachedDiscoveryClient, error)
-
-	// RestConfig connects to rest client.
-	RestConfig() (*restclient.Config, error)
-
-	// MXDial connects to metrics server.
-	MXDial() (*versioned.Clientset, error)
-
-	// DynDial connects to dynamic client.
-	DynDial() (dynamic.Interface, error)
-
-	// HasMetrics checks if metrics server is available.
-	HasMetrics() bool
-
-	// ValidNamespaces returns all available namespaces.
-	ValidNamespaces() ([]v1.Namespace, error)
-
-	// ServerVersion returns current server version.
-	ServerVersion() (*version.Info, error)
-
-	// CheckConnectivity checks if api server connection is happy or not.
-	CheckConnectivity() bool
-
-	// ActiveCluster returns the current cluster name.
-	ActiveCluster() string
-
-	// ActiveNamespace returns the current namespace.
-	ActiveNamespace() string
-
-	// IsActiveNamespace checks if given ns is active.
-	IsActiveNamespace(string) bool
 }
 
 // CurrentMetrics tracks current cpu/mem.
