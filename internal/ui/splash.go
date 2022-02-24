@@ -8,7 +8,7 @@ import (
 	"github.com/liupzmin/weewoe/internal/config"
 )
 
-// LogoSmall WeeWoo small log.
+// LogoSmall WeeWoe small log.
 var LogoSmall = []string{
 
 	`__  _  __ ____   ______  _  ______   ____`,
@@ -17,7 +17,7 @@ var LogoSmall = []string{
 	`  \/\_/  \___  >\___  >\/\_/ \____/ \___  >`,
 }
 
-// LogoBig WeeWoo big logo for splash page.
+// LogoBig WeeWoe big logo for splash page.
 var LogoBig = []string{
 	` __  __  __     __     __   __  __  __    ___      __`,
 	`/\ \/\ \/\ \  /'__'\ /'__'\/\ \/\ \/\ \  / __'\  /'__'\ `,

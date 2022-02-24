@@ -31,8 +31,8 @@ type W2 struct {
 	manualScreenDumpDir *string
 }
 
-// NewWeeWoo create a new W2 configuration.
-func NewWeeWoo() *W2 {
+// NewWeeWoe create a new W2 configuration.
+func NewWeeWoe() *W2 {
 	return &W2{
 		RefreshRate:   defaultRefreshRate,
 		MaxConnRetry:  defaultMaxConnRetry,

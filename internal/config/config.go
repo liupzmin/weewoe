@@ -19,13 +19,13 @@ var (
 	// W2ConfigFile represents W2 config file location.
 	W2ConfigFile = filepath.Join(W2Home(), "config.yml")
 	// W2DefaultScreenDumpDir represents a default directory where W2 screen dumps will be persisted.
-	W2DefaultScreenDumpDir = filepath.Join(os.TempDir(), fmt.Sprintf("weewoo-screens-%s", MustW2User()))
+	W2DefaultScreenDumpDir = filepath.Join(os.TempDir(), fmt.Sprintf("weewoe-screens-%s", MustW2User()))
 )
 
 type (
 	// Config tracks W2 configuration options.
 	Config struct {
-		W2 *W2 `yaml:"weewoo"`
+		W2 *W2 `yaml:"weewoe"`
 	}
 )
 
@@ -45,7 +45,7 @@ func W2Home() string {
 
 // NewConfig creates a new default config.
 func NewConfig() *Config {
-	return &Config{W2: NewWeeWoo()}
+	return &Config{W2: NewWeeWoe()}
 }
 
 // Refine the configuration based on cli args.
@@ -127,7 +127,7 @@ func (c *Config) Load(path string) error {
 	if err != nil {
 		return err
 	}
-	c.W2 = NewWeeWoo()
+	c.W2 = NewWeeWoe()
 
 	var cfg Config
 	if err := yaml.Unmarshal(f, &cfg); err != nil {
