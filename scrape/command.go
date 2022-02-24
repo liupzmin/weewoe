@@ -60,7 +60,9 @@ func (c *Command) GetProcessStat() (*ProcessState, error) {
 		log.Warnf("GetPID failed: %s", err)
 		return bad, nil
 	}
-	cmd := fmt.Sprintf("cat /proc/%s/stat", pid)
+	log.Debugf("%s's pid is %s", c.p.Name, pid)
+	cmd := fmt.Sprintf("/bin/cat /proc/%s/stat", strings.TrimSpace(pid))
+	log.Debugf("Run Cmd :%s", cmd)
 	output, err := c.target.Conn.SingleRun(cmd)
 	if err != nil {
 		var exit *ssh2.ExitError

@@ -84,7 +84,6 @@ func (p ProcessFactory) Stream(cat string) <-chan render.Rows {
 
 			}
 			b, err := p.Decode(data.Content)
-			log.Info().Msgf("receive msg: %+v", b)
 			if err != nil {
 				log.Error().Msgf("Decode failed: %s", err)
 				continue

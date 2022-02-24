@@ -231,7 +231,7 @@ func (t *MyTable) reconcile(ctx context.Context, rows render.Rows) error {
 		t.data.Clear()
 	}*/
 	t.data.Clear()
-	log.Info().Msgf("Begin to update: %+v", rows)
+	log.Debug().Msgf("Begin to update: %+v", rows)
 	t.data.Update(rows)
 	t.data.SetHeader(t.namespace, meta.Renderer.Header(t.namespace))
 

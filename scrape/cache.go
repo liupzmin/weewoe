@@ -308,8 +308,9 @@ func (c *ProcessCache) MergeSort(pros []*ProcessState, ports []*PortState) []Gro
 			g = make(map[string]*CacheProcess, 0)
 		}
 		var st string
+		loc, _ := time.LoadLocation("Asia/Shanghai")
 		if v.StartTime > 0 {
-			st = time.Unix(v.StartTime, 0).Format(TimeLayout)
+			st = time.Unix(v.StartTime, 0).In(loc).Format(TimeLayout)
 		}
 		g[v.Name] = &CacheProcess{
 			Name:      v.Name,
@@ -319,7 +320,7 @@ func (c *ProcessCache) MergeSort(pros []*ProcessState, ports []*PortState) []Gro
 			State:     v.State,
 			StartTime: st,
 			Suspend:   v.Suspend,
-			TimeStamp: time.Unix(v.Timestamp, 0).Format(TimeLayout),
+			TimeStamp: time.Unix(v.Timestamp, 0).In(loc).Format(TimeLayout),
 		}
 		gmap[v.Group] = g
 	}
