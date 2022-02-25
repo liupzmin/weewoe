@@ -125,8 +125,11 @@ func (n *NameSpace) Erect(rows render.Rows) {
 		}
 		g := gmaps[v.Fields[0]]
 
-		ports := strings.Split(v.Fields[4], "|")
-		ps := strings.Split(v.Fields[5], "|")
+		f := func(c rune) bool {
+			return c == '|'
+		}
+		ports := strings.FieldsFunc(v.Fields[4], f)
+		ps := strings.FieldsFunc(v.Fields[5], f)
 
 		pss := make([]CachePort, 0)
 		for i, num := range ports {

@@ -24,6 +24,7 @@ type Report struct {
 
 func (r *Report) Render(gps []scrape.Group) (string, error) {
 	r.suck(gps)
+	// log.Debugf("The Report is: %+v", *r)
 	funcMap := template.FuncMap{
 		"inc": func(i int) int {
 			return i + 1

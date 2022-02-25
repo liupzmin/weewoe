@@ -55,6 +55,7 @@ var (
 )
 
 type Process struct {
+	OSUser  string
 	Name    string
 	Path    string
 	Ports   []int64
