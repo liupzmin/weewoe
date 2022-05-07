@@ -59,13 +59,20 @@ func (m *Mail) Send(title, content string) {
 
 	auth := LoginAuth(m.From, m.Passwd)
 	d := gomail.NewDialer(m.SMTPHost, m.SMTPPort, m.From, m.Passwd)
-	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	d.TLSConfig = &tls.Config{MinVersion: tls.VersionTLS10, InsecureSkipVerify: true}
 	d.Auth = auth
 
-	if err := d.DialAndSend(gm); err != nil {
-		log.Errorf("DialAndSend err %v:", err)
+	var retry = 3
+	for retry > 0 {
+		err := d.DialAndSend(gm)
+		if err != nil {
+			log.Errorf("try send email err %v:", err)
+			retry--
+			continue
+		}
+		log.Info("Send Mail Success!")
+		return
 	}
-	log.Info("Send Mail Success!")
 }
 
 type loginAuth struct {
