@@ -1,6 +1,7 @@
 package scrape
 
 import (
+	"strings"
 	"sync"
 	"time"
 
@@ -21,6 +22,47 @@ const (
 )
 
 const TimeLayout = "2006-01-02 15:04:05"
+
+var (
+	instances = &Instances{
+		Set: make(map[string]Target),
+	}
+	processInfo Config
+	imux, pmux  sync.RWMutex
+	pro         *viper.Viper
+)
+
+type Instances struct {
+	sync.RWMutex
+	Set map[string]Target
+}
+
+func (i *Instances) GetTarget(key string) (*Target, bool) {
+	i.RLock()
+	defer i.RUnlock()
+	var (
+		t  Target
+		ok bool
+	)
+	if t, ok = i.Set[key]; ok {
+		return &t, ok
+	}
+	return nil, ok
+}
+
+func (i *Instances) AddConn(key string, conn *ssh.Connection) {
+	i.Lock()
+	defer i.Unlock()
+	i.Set[key] = Target{
+		Conn: conn,
+	}
+}
+
+func (i *Instances) Clear() {
+	i.Lock()
+	defer i.Unlock()
+	i.Set = make(map[string]Target)
+}
 
 type Target struct {
 	Conn *ssh.Connection
@@ -46,13 +88,6 @@ func (t Target) WaitClient() {
 		}
 	}
 }
-
-var (
-	instances   map[string]Target
-	processInfo Config
-	imux, pmux  sync.RWMutex
-	pro         *viper.Viper
-)
 
 type Process struct {
 	OSUser  string
@@ -145,19 +180,20 @@ func loadProcessInfo() {
 func initConnection(conf Config) {
 	imux.Lock()
 	defer imux.Unlock()
-	if instances == nil {
-		instances = make(map[string]Target)
-	}
+	instances.Clear()
 	for _, v := range conf.Processes {
-		if _, ok := instances[v.Host]; !ok {
-			conn, err := ssh.NewConnection(v.Host+":22", "root")
+		h := strings.Split(v.Host, ":")[0]
+		for _, p := range v.Process {
+			if _, ok := instances.GetTarget(h + p.OSUser); ok {
+				continue
+			}
+
+			conn, err := ssh.NewConnection(v.Host, p.OSUser)
 			if err != nil {
 				log.Errorf("connect to %s failed: %s", v.Host, err.Error())
 				continue
 			}
-			instances[v.Host] = Target{
-				Conn: conn,
-			}
+			instances.AddConn(h+p.OSUser, conn)
 		}
 	}
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -125,7 +126,7 @@ func (p *ProcessDetail) collect(du time.Duration) {
 			p.scrape()
 		case <-p.done:
 			log.Info("Process Collector: work down! I'm quitting.")
-			for _, v := range instances {
+			for _, v := range instances.Set {
 				if v.Conn.IsValid() {
 					v.Close()
 				}
@@ -162,17 +163,19 @@ func (p *ProcessDetail) collectProcess() {
 		wg.Add(1)
 		go func(pc ProcessConfig) {
 			defer wg.Done()
-			imux.RLock()
-			t := instances[pc.Host]
-			imux.RUnlock()
-			t.WaitClient()
 
 			mux.Lock()
 			defer mux.Unlock()
 			for _, p := range pc.Process {
 				p := p
-				p.Host = pc.Host
-				cmd := NewCommand(t, p)
+
+				h := strings.Split(pc.Host, ":")[0]
+				p.Host = h
+
+				t, _ := instances.GetTarget(h + p.OSUser)
+				t.WaitClient()
+
+				cmd := NewCommand(*t, p)
 				ps, err := cmd.GetProcessStat()
 				if err != nil {
 					log.Errorf("GetProcessStat failed: %s, process: %v", err.Error(), p)
@@ -205,7 +208,7 @@ func (p *ProcessDetail) collectPort() {
 			go func(p Process, host string) {
 				defer wg.Done()
 
-				p.Host = host
+				p.Host = strings.Split(host, ":")[0]
 				states := make([]*Port, 0)
 				for _, port := range p.Ports {
 					isOpen := RawConnect(p.Host, port)
