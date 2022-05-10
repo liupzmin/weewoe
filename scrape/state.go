@@ -53,7 +53,7 @@ func (s *State) Drain(kind *pb.Kind, stream pb.State_DrainServer) error {
 		return err
 	}
 
-	w := WrapperFuncMap[kind.Name](c, serialize.ProcessGob{})
+	w := WrapperFuncMap[kind.Name](serialize.ProcessGob{})
 	c.AddListener(w)
 	defer c.RemoveListener(w)
 

@@ -138,6 +138,8 @@ func (p *ProcessDetail) collect(du time.Duration) {
 }
 
 func (p *ProcessDetail) scrape() {
+	pmux.RLock()
+	defer pmux.RUnlock()
 	p.collectProcess()
 	p.collectPort()
 	p.fireDataChanged()
@@ -168,22 +170,27 @@ func (p *ProcessDetail) collectProcess() {
 			defer mux.Unlock()
 			for _, p := range pc.Process {
 				p := p
-
 				h := strings.Split(pc.Host, ":")[0]
 				p.Host = h
 
+				ps := &ProcessState{
+					Process:   p,
+					State:     Bad,
+					Timestamp: time.Now().Unix(),
+				}
+
 				t, _ := instances.GetTarget(h + p.OSUser)
-				t.WaitClient()
+
+				if !t.Conn.IsValid() {
+					collection = append(collection, ps)
+					continue
+				}
 
 				cmd := NewCommand(*t, p)
 				ps, err := cmd.GetProcessStat()
 				if err != nil {
 					log.Errorf("GetProcessStat failed: %s, process: %v", err.Error(), p)
-					collection = append(collection, &ProcessState{
-						Process:   p,
-						State:     Bad,
-						Timestamp: time.Now().Unix(),
-					})
+					collection = append(collection, ps)
 					continue
 				}
 				collection = append(collection, ps)

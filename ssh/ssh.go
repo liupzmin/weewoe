@@ -146,36 +146,35 @@ func (c *Connection) connect() {
 		}
 	}
 	log.Infof("connect to %s successful!", c.addr)
-	go func() {
+	go c.watch()
+}
 
-		c.Lock()
-		c.valid = true
-		c.Unlock()
+func (c *Connection) watch() {
+	c.Lock()
+	c.valid = true
+	c.Unlock()
 
-		select {
-		case err := <-c.reconnect:
-			if err != nil {
+	select {
+	case err := <-c.reconnect:
+		if err != nil {
 
-				c.Lock()
-				c.valid = false
-				c.Unlock()
+			c.Lock()
+			c.valid = false
+			c.Unlock()
 
-				log.Warnf("reconnecting to ssh server %s", c.addr)
+			log.Warnf("reconnecting to ssh server %s", c.addr)
 
-				c.stopKeepAlive <- struct{}{}
-				_ = c.client.Close()
+			c.stopKeepAlive <- struct{}{}
+			_ = c.client.Close()
 
-				go c.connect()
-				return
-			}
-		case <-c.done:
-			if c.client != nil {
-				c.stopKeepAlive <- struct{}{}
-				_ = c.client.Close()
-			}
-			return
+			c.connect()
 		}
-	}()
+	case <-c.done:
+		if c.client != nil {
+			c.stopKeepAlive <- struct{}{}
+			_ = c.client.Close()
+		}
+	}
 }
 
 func (c *Connection) dial() error {

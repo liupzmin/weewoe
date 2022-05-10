@@ -20,8 +20,8 @@ const (
 )
 
 type Group struct {
-	Name      string
-	Processes []*CacheProcess
+	Name      string          `json:"name"`
+	Processes []*CacheProcess `json:"processes"`
 }
 
 func (g Group) CountNormal() int {
@@ -203,15 +203,15 @@ func (n *NameSpace) Groups() []Group {
 }
 
 type CacheProcess struct {
-	Name      string
-	Host      string
-	Path      string
-	Flag      string
-	Ports     []CachePort
-	State     int64
-	StartTime string
-	TimeStamp string
-	Suspend   bool
+	Name      string      `json:"name"`
+	Host      string      `json:"host"`
+	Path      string      `json:"path"`
+	Flag      string      `json:"flag"`
+	Ports     []CachePort `json:"ports"`
+	State     int64       `json:"state"`
+	StartTime string      `json:"start_time"`
+	TimeStamp string      `json:"time_stamp"`
+	Suspend   bool        `json:"suspend"`
 }
 
 func (cp *CacheProcess) String() string {
@@ -225,8 +225,8 @@ func (cp *CacheProcess) String() string {
 }
 
 type CachePort struct {
-	Number string
-	State  int64
+	Number string `json:"number"`
+	State  int64  `json:"state"`
 }
 
 type cps []CachePort

@@ -10,18 +10,17 @@ import (
 	"github.com/liupzmin/weewoe/serialize"
 )
 
-type WrapperFunc func(Collector, serialize.Serializable) TableListener
+type WrapperFunc func(serialize.Serializable) TableListener
 
 type Wrapper struct {
 	serialize.Serializable
-	Collector
+
 	ch chan []byte
 }
 
-func NewWrapper(c Collector, s serialize.Serializable) TableListener {
+func NewWrapper(s serialize.Serializable) TableListener {
 	return &Wrapper{
 		Serializable: s,
-		Collector:    c,
 		ch:           make(chan []byte),
 	}
 }
@@ -42,14 +41,12 @@ func (w Wrapper) Chan() chan []byte {
 
 type NSWrapper struct {
 	serialize.Serializable
-	Collector
 	ch chan []byte
 }
 
-func NewNSWrapper(c Collector, s serialize.Serializable) TableListener {
+func NewNSWrapper(s serialize.Serializable) TableListener {
 	return &NSWrapper{
 		Serializable: s,
-		Collector:    c,
 		ch:           make(chan []byte),
 	}
 }

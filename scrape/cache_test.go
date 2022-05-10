@@ -1,8 +1,9 @@
 package scrape
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var (
@@ -131,6 +132,7 @@ var (
 					},
 					State:     1,
 					StartTime: "2021-11-12 14:54:05",
+					TimeStamp: "2021-11-12 14:54:05",
 					Suspend:   false,
 				},
 				{
@@ -144,6 +146,7 @@ var (
 					},
 					State:     1,
 					StartTime: "2021-11-12 14:54:05",
+					TimeStamp: "2021-11-12 14:54:05",
 					Suspend:   false,
 				},
 			},
@@ -162,6 +165,7 @@ var (
 					},
 					State:     0,
 					StartTime: "",
+					TimeStamp: "2021-11-12 14:54:05",
 					Suspend:   false,
 				},
 			},
@@ -170,12 +174,14 @@ var (
 )
 
 func TestStateCache_MergeSort(t *testing.T) {
-	GetCache().SyncPro(ps)
-	GetCache().SyncPort(ports)
-	data := GetCache().MergeSort(GetCache().FetchPro(), GetCache().FetchPort())
-	t.Logf("output:%+v", data)
-	t.Logf("output:%+v", expect)
-	if !reflect.DeepEqual(data, expect) {
+	c := &ProcessCache{}
+	c.SyncPro(ps)
+	c.SyncPort(ports)
+	data := c.MergeSort(c.FetchPro(), c.FetchPort())
+	t.Logf("data:%+v", data)
+	t.Logf("expe:%+v", expect)
+
+	if !assert.Equal(t, expect, data) {
 		t.Errorf("merge sort failed")
 	}
 }

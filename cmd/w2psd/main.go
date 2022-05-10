@@ -7,6 +7,8 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 
+	"k8s.io/apimachinery/pkg/util/json"
+
 	"github.com/liupzmin/weewoe/log"
 	"github.com/liupzmin/weewoe/mail"
 	pb "github.com/liupzmin/weewoe/proto"
@@ -76,6 +78,7 @@ func sendAlert() {
 
 func httpServer() {
 	http.HandleFunc("/", processHandler)
+	http.HandleFunc("/list", getProcesses)
 	if err := http.ListenAndServe(":9528", nil); err != nil {
 		log.Panicf("http server start failed: %s", err.Error())
 	}
@@ -96,4 +99,25 @@ func processHandler(w http.ResponseWriter, req *http.Request) {
 		_, _ = io.WriteString(w, fmt.Sprintf("render error happened: %s", err))
 	}
 	_, _ = io.WriteString(w, output)
+}
+
+func getProcesses(w http.ResponseWriter, req *http.Request) {
+	p := scrape.CollectorMap["process"]
+	err := p.Start()
+	if err != nil {
+		_, _ = io.WriteString(w, fmt.Sprintf("peek error happened: %s", err))
+	}
+
+	p.Refresh()
+
+	var ns scrape.NameSpace
+	ns.Erect(p.Peek())
+
+	g := ns.Groups()
+	content, err := json.Marshal(g)
+	if err != nil {
+		_, _ = io.WriteString(w, fmt.Sprintf("json mashal error : %s", err))
+	}
+
+	_, _ = w.Write(content)
 }

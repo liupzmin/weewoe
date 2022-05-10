@@ -3,7 +3,6 @@ package scrape
 import (
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/liupzmin/weewoe/log"
@@ -28,7 +27,7 @@ var (
 		Set: make(map[string]Target),
 	}
 	processInfo Config
-	imux, pmux  sync.RWMutex
+	pmux        sync.RWMutex
 	pro         *viper.Viper
 )
 
@@ -61,6 +60,9 @@ func (i *Instances) AddConn(key string, conn *ssh.Connection) {
 func (i *Instances) Clear() {
 	i.Lock()
 	defer i.Unlock()
+	for _, v := range i.Set {
+		v.Close()
+	}
 	i.Set = make(map[string]Target)
 }
 
@@ -74,7 +76,7 @@ func (t Target) Close() {
 	t.Conn.Close()
 }
 
-func (t Target) WaitClient() {
+/*func (t Target) WaitClient() {
 	for {
 		if t.Conn.IsValid() {
 			return
@@ -87,7 +89,7 @@ func (t Target) WaitClient() {
 
 		}
 	}
-}
+}*/
 
 type Process struct {
 	OSUser  string
@@ -131,8 +133,11 @@ type Config struct {
 
 func Init() {
 	initConfig()
-	initConnection(processInfo)
-	takeOff()
+	go func() {
+		initConnection(processInfo)
+		takeOff()
+	}()
+
 }
 
 func initConfig() {
@@ -178,8 +183,11 @@ func loadProcessInfo() {
 }
 
 func initConnection(conf Config) {
-	imux.Lock()
-	defer imux.Unlock()
+	log.Info("begin to create ssh connection!")
+	defer func() {
+		log.Info("create ssh connection done!")
+	}()
+
 	instances.Clear()
 	for _, v := range conf.Processes {
 		h := strings.Split(v.Host, ":")[0]
