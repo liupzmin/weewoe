@@ -89,6 +89,7 @@ func processHandler(w http.ResponseWriter, req *http.Request) {
 	err := p.Start()
 	if err != nil {
 		_, _ = io.WriteString(w, fmt.Sprintf("peek error happened: %s", err))
+		return
 	}
 
 	var ns scrape.NameSpace
@@ -105,7 +106,9 @@ func getProcesses(w http.ResponseWriter, req *http.Request) {
 	p := scrape.CollectorMap["process"]
 	err := p.Start()
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = io.WriteString(w, fmt.Sprintf("peek error happened: %s", err))
+		return
 	}
 
 	p.Refresh()
@@ -116,7 +119,9 @@ func getProcesses(w http.ResponseWriter, req *http.Request) {
 	g := ns.Groups()
 	content, err := json.Marshal(g)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		_, _ = io.WriteString(w, fmt.Sprintf("json mashal error : %s", err))
+		return
 	}
 
 	_, _ = w.Write(content)
