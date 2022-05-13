@@ -3,6 +3,9 @@ package log
 import (
 	"errors"
 
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+
 	"google.golang.org/grpc/grpclog"
 )
 
@@ -16,6 +19,14 @@ var defaultLogger = NewLogger(&Config{
 	AddCaller:        true,
 	CallerSkip:       2,
 })
+
+func SetLevel(level string) {
+	lv := zap.NewAtomicLevelAt(zapcore.InfoLevel)
+	if err := lv.UnmarshalText([]byte(level)); err != nil {
+		panic(err)
+	}
+	defaultLogger.SetLevel(lv.Level())
+}
 
 func SetLogger(logger *Logger) {
 	defaultLogger = logger

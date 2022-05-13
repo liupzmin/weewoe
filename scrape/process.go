@@ -156,21 +156,28 @@ func (p *ProcessDetail) fireDataChanged() {
 }
 
 func (p *ProcessDetail) collectProcess() {
-	collection := make([]*ProcessState, 0)
-	var (
-		wg  sync.WaitGroup
-		mux sync.Mutex
-	)
-	for _, v := range processInfo.Processes {
-		wg.Add(1)
-		go func(pc ProcessConfig) {
-			defer wg.Done()
 
-			mux.Lock()
-			defer mux.Unlock()
-			for _, p := range pc.Process {
-				p := p
-				h := strings.Split(pc.Host, ":")[0]
+	var (
+		wg sync.WaitGroup
+
+		mux        sync.Mutex
+		collection = make([]*ProcessState, 0)
+	)
+
+	appendFunc := func(p *ProcessState) {
+		mux.Lock()
+		defer mux.Unlock()
+		collection = append(collection, p)
+	}
+
+	for _, v := range processInfo.Processes {
+		v := v
+		for _, p := range v.Process {
+			wg.Add(1)
+			p := p
+			go func() {
+				defer wg.Done()
+				h := strings.Split(v.Host, ":")[0]
 				p.Host = h
 
 				ps := &ProcessState{
@@ -182,20 +189,20 @@ func (p *ProcessDetail) collectProcess() {
 				t, _ := instances.GetTarget(h + p.OSUser)
 
 				if !t.Conn.IsValid() {
-					collection = append(collection, ps)
-					continue
+					appendFunc(ps)
+					return
 				}
 
 				cmd := NewCommand(*t, p)
 				ps, err := cmd.GetProcessStat()
 				if err != nil {
 					log.Errorf("GetProcessStat failed: %s, process: %v", err.Error(), p)
-					collection = append(collection, ps)
-					continue
+					appendFunc(ps)
+					return
 				}
-				collection = append(collection, ps)
-			}
-		}(v)
+				appendFunc(ps)
+			}()
+		}
 	}
 
 	wg.Wait()

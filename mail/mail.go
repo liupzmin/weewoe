@@ -5,8 +5,6 @@ import (
 	"errors"
 	"net/smtp"
 
-	"github.com/liupzmin/weewoe/tmpl"
-
 	"github.com/spf13/viper"
 
 	"gopkg.in/gomail.v2"
@@ -41,7 +39,7 @@ func (m *Mail) Run() {
 	var ns scrape.NameSpace
 	ns.Erect(rows)
 
-	r := new(tmpl.Report)
+	r := new(scrape.Report)
 	output, err := r.Render(ns.Groups())
 	if err != nil {
 		return

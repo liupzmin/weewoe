@@ -1,18 +1,22 @@
 package ssh
 
 import (
+	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"net"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/crypto/ssh/knownhosts"
 
 	"github.com/liupzmin/weewoe/log"
 
 	"golang.org/x/crypto/ssh"
-	"golang.org/x/crypto/ssh/knownhosts"
 )
 
 type Connection struct {
@@ -28,6 +32,12 @@ type Connection struct {
 func NewConnection(addr, user string) (*Connection, error) {
 	hostCallBack, err := knownhosts.New(filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts"))
 	if err != nil {
+		return nil, err
+	}
+	h := strings.Split(addr, ":")[0]
+	hostKey, err := getHostKey(h)
+	if err != nil {
+		log.Errorf("can't find %s's key: %v", addr, err)
 		return nil, err
 	}
 
@@ -50,7 +60,10 @@ func NewConnection(addr, user string) (*Connection, error) {
 			ssh.PublicKeys(signer),
 		},
 		HostKeyCallback: hostCallBack,
-		Timeout:         30 * time.Second,
+		HostKeyAlgorithms: []string{
+			hostKey.Type(),
+		},
+		Timeout: 30 * time.Second,
 	}
 
 	conn := &Connection{
@@ -68,10 +81,15 @@ func NewConnection(addr, user string) (*Connection, error) {
 }
 
 func (c *Connection) IsValid() bool {
+	c.RLock()
+	defer c.RUnlock()
 	return c.valid
 }
 
 func (c *Connection) SingleRun(cmd string) (string, error) {
+	// 并发安全
+	c.Lock()
+	defer c.Unlock()
 	if c.client == nil {
 		return "", fmt.Errorf("connection not complete")
 	}
@@ -126,9 +144,7 @@ func (c *Connection) MultipleRun(commands ...string) (string, error) {
 }
 
 func (c *Connection) Close() {
-	c.RLock()
-	defer c.RUnlock()
-	c.done <- struct{}{}
+	close(c.done)
 }
 
 func (c *Connection) connect() {
@@ -150,17 +166,13 @@ func (c *Connection) connect() {
 }
 
 func (c *Connection) watch() {
-	c.Lock()
-	c.valid = true
-	c.Unlock()
+	c.setStatus(true)
 
 	select {
 	case err := <-c.reconnect:
 		if err != nil {
 
-			c.Lock()
-			c.valid = false
-			c.Unlock()
+			c.setStatus(false)
 
 			log.Warnf("reconnecting to ssh server %s", c.addr)
 
@@ -175,6 +187,12 @@ func (c *Connection) watch() {
 			_ = c.client.Close()
 		}
 	}
+}
+
+func (c *Connection) setStatus(s bool) {
+	c.Lock()
+	defer c.Unlock()
+	c.valid = s
 }
 
 func (c *Connection) dial() error {
@@ -256,4 +274,34 @@ func (c *Conn) Write(b []byte) (int, error) {
 		_ = c.Conn.SetWriteDeadline(time.Time{})
 	}()
 	return c.Conn.Write(b)
+}
+
+func getHostKey(host string) (ssh.PublicKey, error) {
+	file, err := os.Open(filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts"))
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	var hostKey ssh.PublicKey
+	for scanner.Scan() {
+		fields := strings.Split(scanner.Text(), " ")
+		if len(fields) != 3 {
+			continue
+		}
+		if strings.Contains(fields[0], host) {
+			var err error
+			hostKey, _, _, _, err = ssh.ParseAuthorizedKey(scanner.Bytes())
+			if err != nil {
+				return nil, errors.New(fmt.Sprintf("error parsing %q: %v", fields[2], err))
+			}
+			break
+		}
+	}
+
+	if hostKey == nil {
+		return nil, errors.New(fmt.Sprintf("no hostkey for %s", host))
+	}
+	return hostKey, nil
 }

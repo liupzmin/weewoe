@@ -1,33 +1,68 @@
 package main
 
 import (
-	"fmt"
-	"io"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
 
-	"k8s.io/apimachinery/pkg/util/json"
+	"github.com/spf13/cobra"
 
+	"github.com/liupzmin/weewoe/config"
 	"github.com/liupzmin/weewoe/log"
 	"github.com/liupzmin/weewoe/mail"
 	pb "github.com/liupzmin/weewoe/proto"
 	"github.com/liupzmin/weewoe/scrape"
-	"github.com/liupzmin/weewoe/tmpl"
-
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/viper"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
+const (
+	appName      = "wee woe"
+	shortAppDesc = "A CLI for doing some tasks and checking the results."
+	longAppDesc  = "carefree is a CLI to do and view your variety of tasks and beautify the output."
+)
+
+var (
+	w2Flags *config.Flags
+
+	rootCmd = &cobra.Command{
+		Use:   appName,
+		Short: shortAppDesc,
+		Long:  longAppDesc,
+		Run:   run,
+	}
+)
+
+func init() {
+	initFlags()
+}
+
 func main() {
+	if err := rootCmd.Execute(); err != nil {
+		log.Panicf("run failed %s", err)
+	}
+}
+
+func run(cmd *cobra.Command, args []string) {
+	log.SetLevel(*w2Flags.LogLevel)
 	scrape.Init()
 	cronSendMail()
 	sendAlert()
 
 	go httpServer()
+	s := startGRPCServer()
 
+	select {
+	case <-waitSignals():
+		log.Info("SHUTTING DOWN......")
+		s.Stop()
+		scrape.Stop()
+	}
+}
+
+func startGRPCServer() *grpc.Server {
 	s := grpc.NewServer()
 	pb.RegisterStateServer(s, &scrape.State{})
 	reflection.Register(s)
@@ -42,12 +77,7 @@ func main() {
 		}
 	}()
 
-	select {
-	case <-waitSignals():
-		log.Info("SHUTTING DOWN......")
-		scrape.Stop()
-		s.GracefulStop()
-	}
+	return s
 }
 
 func cronSendMail() {
@@ -77,52 +107,28 @@ func sendAlert() {
 }
 
 func httpServer() {
-	http.HandleFunc("/", processHandler)
-	http.HandleFunc("/list", getProcesses)
+	http.HandleFunc("/", scrape.ProcessHandler)
+	http.HandleFunc("/list", scrape.GetProcesses)
 	if err := http.ListenAndServe(":9528", nil); err != nil {
 		log.Panicf("http server start failed: %s", err.Error())
 	}
 }
 
-func processHandler(w http.ResponseWriter, req *http.Request) {
-	p := scrape.CollectorMap["process"]
-	err := p.Start()
-	if err != nil {
-		_, _ = io.WriteString(w, fmt.Sprintf("peek error happened: %s", err))
-		return
-	}
+func initFlags() {
+	w2Flags = config.NewFlags()
 
-	var ns scrape.NameSpace
-	ns.Erect(p.Peek())
-	r := new(tmpl.Report)
-	output, err := r.Render(ns.Groups())
-	if err != nil {
-		_, _ = io.WriteString(w, fmt.Sprintf("render error happened: %s", err))
-	}
-	_, _ = io.WriteString(w, output)
-}
+	rootCmd.PersistentFlags().StringVarP(
+		w2Flags.LogLevel,
+		"logLevel", "l",
+		config.DefaultLogLevel,
+		"Specify a log level (info, warn, debug, trace, error)",
+	)
+	rootCmd.Flags().StringVarP(
+		w2Flags.LogFile,
+		"logFile", "",
+		config.DefaultLogFile,
+		"Specify the log file",
+	)
 
-func getProcesses(w http.ResponseWriter, req *http.Request) {
-	p := scrape.CollectorMap["process"]
-	err := p.Start()
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = io.WriteString(w, fmt.Sprintf("peek error happened: %s", err))
-		return
-	}
-
-	p.Refresh()
-
-	var ns scrape.NameSpace
-	ns.Erect(p.Peek())
-
-	g := ns.Groups()
-	content, err := json.Marshal(g)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = io.WriteString(w, fmt.Sprintf("json mashal error : %s", err))
-		return
-	}
-
-	_, _ = w.Write(content)
+	rootCmd.Flags()
 }
