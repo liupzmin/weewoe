@@ -6,6 +6,9 @@
 *.so
 *.dylib
 
+cmd/w2psd/w2psd
+cmd/w2ctl/w2ctl
+
 # Test binary, built with `go test -c`
 *.test
 
