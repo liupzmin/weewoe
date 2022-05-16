@@ -88,6 +88,10 @@ type Process struct {
 	Suspend bool
 }
 
+func (p *Process) GetConnectionKey(host string) string {
+	return host + p.OSUser + p.Name
+}
+
 type ProcessState struct {
 	Process
 	State         int64
@@ -177,7 +181,7 @@ func initConnection(conf Config) {
 	for _, v := range conf.Processes {
 		h := strings.Split(v.Host, ":")[0]
 		for _, p := range v.Process {
-			if _, ok := instances.GetTarget(h + p.OSUser); ok {
+			if _, ok := instances.GetTarget(p.GetConnectionKey(h)); ok {
 				continue
 			}
 
@@ -186,7 +190,7 @@ func initConnection(conf Config) {
 				log.Errorf("connect to %s failed: %s", v.Host, err.Error())
 				continue
 			}
-			instances.AddConn(h+p.OSUser, conn)
+			instances.AddConn(p.GetConnectionKey(h), conn)
 		}
 	}
 }

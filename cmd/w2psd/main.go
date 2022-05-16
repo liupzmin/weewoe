@@ -19,9 +19,9 @@ import (
 )
 
 const (
-	appName      = "wee woe"
-	shortAppDesc = "A CLI for doing some tasks and checking the results."
-	longAppDesc  = "carefree is a CLI to do and view your variety of tasks and beautify the output."
+	appName      = "w2psd"
+	shortAppDesc = "A daemon for checking distributed processes' status."
+	longAppDesc  = "w2psd is a daemon to check the status of variety of processes."
 )
 
 var (

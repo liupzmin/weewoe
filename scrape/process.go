@@ -186,7 +186,7 @@ func (p *ProcessDetail) collectProcess() {
 					Timestamp: time.Now().Unix(),
 				}
 
-				t, _ := instances.GetTarget(h + p.OSUser)
+				t, _ := instances.GetTarget(p.GetConnectionKey(h))
 
 				if !t.Conn.IsValid() {
 					appendFunc(ps)
