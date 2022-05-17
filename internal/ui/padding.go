@@ -71,7 +71,10 @@ func toAgeHuman(s string) string {
 }
 
 func toAgeHumanFromTimeStamp(t string) string {
-	loc, _ := time.LoadLocation("Asia/Shanghai")
+	loc, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		loc = time.FixedZone("CST-8", 8*3600)
+	}
 	b, err := time.ParseInLocation(TimeLayout, t, loc)
 	if err != nil {
 		return ""

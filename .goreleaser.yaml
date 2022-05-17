@@ -1,0 +1,46 @@
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - main: ./cmd/w2ctl
+    env:
+     - CGO_ENABLED=0
+    goos:
+     - linux
+     - windows
+     - darwin
+    id: "w2ctl"
+    binary: w2ctl
+    flags:
+      - -trimpath
+
+  - main: ./cmd/w2psd
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    id: "w2psd"
+    binary: w2psd
+    flags:
+      - -trimpath
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'

@@ -311,7 +311,10 @@ func (c *ProcessCache) MergeSort(pros []*ProcessState, ports []*PortState) []Gro
 			g = make(map[string]*CacheProcess, 0)
 		}
 		var st string
-		loc, _ := time.LoadLocation("Asia/Shanghai")
+		loc, err := time.LoadLocation("Asia/Shanghai")
+		if err != nil {
+			loc = time.FixedZone("CST-8", 8*3600)
+		}
 		if v.StartTime > 0 {
 			st = time.Unix(v.StartTime, 0).In(loc).Format(TimeLayout)
 		}
