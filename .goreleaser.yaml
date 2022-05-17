@@ -6,7 +6,7 @@ before:
 builds:
   - main: ./cmd/w2ctl
     env:
-     - CGO_ENABLED=1
+     - CGO_ENABLED=0
     goos:
      - linux
      - windows
@@ -15,19 +15,7 @@ builds:
     binary: w2ctl
     flags:
       - -trimpath
-    overrides:
-      - goos: darwin
-        goarch: arm64
-        goarm: ''
-        gomips: ''
-        ldflags:
-          - foo
-        tags:
-          - bar
-        asmflags:
-          - foobar
-        gcflags:
-          - foobaz
+
 
   - main: ./cmd/w2psd
     env:
