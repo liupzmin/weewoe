@@ -1,47 +1,69 @@
+[domain]
+name = "xxxxxxxx系统"
 [scrape]
 # minute interval
-interval = 5
-# the target of alert
+interval = 10
 [alert]
 notify = false
-url = "http://172.16.18.200:9093/api/v1/alerts"
-# mail config
+# alertmanager url
+url = "http://127.0.0.1:9093/api/v1/alerts"
 [mail]
 send = false
-cron = "00 7 * * *"
-server = ""
+cron = "16 16 * * *"
+server = "your.mail-domain.com"
 port = 25
-user = ""
-passwd = ""
-to = ""
-
+user = "you account"
+passwd = "your password"
+to = "destnation"
 [report]
-title = "HFP巡检报告"
-reporter = "高运金融"
-# process config
-[[data.processes]]
-host = "192.168.0.127"
-[[data.processes.process]]
-name = "docker"
-path = "/opt/kube/bin/dockerd"
-pidfile = ""
-ports = [22, 21]
-group = "hfp"
-flag = "/opt/kube/bin/dockerd"
-[[data.processes.process]]
-name = "B"
-path = ""
-pidfile = ""
-ports = [22, 21]
-group = "ph"
-flag = "sssssssss"
+title = "巡检报告"
+reporter = "richard"
 
+# processes
+# one host
 [[data.processes]]
-host = "192.168.1.41"
+host = "192.168.1.41:22"
+
 [[data.processes.process]]
+osuser = "oracle"
 name = "oracle"
 path = ""
 pidfile = ""
 ports = [22, 21]
 group = "oracle"
+flag = "pmon"
+
+[[data.processes.process]]
+name = "deal"
+osuser= "oracle"
+path = ""
+pidfile = ""
+ports = []
+group = "oracle"
+flag = "pmon"
+
+[[data.processes]]
+host = "192.168.1.41:22"
+[[data.processes.process]]
+osuser = "root"
+name = "oracle"
+path = ""
+pidfile = ""
+ports = [22, 21]
+group = "ttttttt"
+flag = "mashaji"
+
+
+
+#another host
+[[data.processes]]
+host = "192.168.1.41:22"
+
+[[data.processes.process]]
+name = "oracle"
+osuser = "root"
+path = ""
+pidfile = ""
+ports = [22]
+group = "AAAAA"
 flag = "pmon"
