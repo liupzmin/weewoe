@@ -15,6 +15,19 @@ builds:
     binary: w2ctl
     flags:
       - -trimpath
+    overrides:
+      - goos: darwin
+        goarch: arm64
+        goarm: ''
+        gomips: ''
+        ldflags:
+          - foo
+        tags:
+          - bar
+        asmflags:
+          - foobar
+        gcflags:
+          - foobaz
 
   - main: ./cmd/w2psd
     env:
