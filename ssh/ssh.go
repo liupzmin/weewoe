@@ -1,23 +1,42 @@
 package ssh
 
 import (
-	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"net"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
-
-	"golang.org/x/crypto/ssh/knownhosts"
 
 	"github.com/liupzmin/weewoe/log"
 
 	"golang.org/x/crypto/ssh"
 )
+
+var (
+	db           *hostKeyDB
+	hostCallback ssh.HostKeyCallback
+	signer       ssh.Signer
+)
+
+func init() {
+	var err error
+	hostCallback, db, err = New(filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts"))
+	if err != nil {
+		log.Panicf("init known host failed: %s", err)
+	}
+
+	key, err := os.ReadFile(filepath.Join(os.Getenv("HOME"), ".ssh", "id_rsa"))
+	if err != nil {
+		log.Panicf("unable to read private key: %v", err)
+	}
+
+	signer, err = ssh.ParsePrivateKey(key)
+	if err != nil {
+		log.Panicf("unable to parse private key: %v", err)
+	}
+}
 
 type Connection struct {
 	sync.RWMutex
@@ -30,27 +49,9 @@ type Connection struct {
 }
 
 func NewConnection(addr, user string) (*Connection, error) {
-	hostCallBack, err := knownhosts.New(filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts"))
+	hostKey, err := getHostKey(addr)
 	if err != nil {
-		return nil, err
-	}
-	h := strings.Split(addr, ":")[0]
-	hostKey, err := getHostKey(h)
-	if err != nil {
-		log.Errorf("can't find %s's key: %v", addr, err)
-		return nil, err
-	}
-
-	key, err := os.ReadFile(filepath.Join(os.Getenv("HOME"), ".ssh", "id_rsa"))
-	if err != nil {
-		log.Errorf("unable to read private key: %v", err)
-		return nil, err
-	}
-
-	// Create the Signer for this private key.
-	signer, err := ssh.ParsePrivateKey(key)
-	if err != nil {
-		log.Errorf("unable to parse private key: %v", err)
+		log.Errorf("can't find %s's key: %s", addr, err)
 		return nil, err
 	}
 
@@ -59,7 +60,7 @@ func NewConnection(addr, user string) (*Connection, error) {
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
-		HostKeyCallback: hostCallBack,
+		HostKeyCallback: hostCallback,
 		HostKeyAlgorithms: []string{
 			hostKey.Type(),
 		},
@@ -196,11 +197,6 @@ func (c *Connection) setStatus(s bool) {
 }
 
 func (c *Connection) dial() error {
-	//client, err := ssh.Dial("tcp", c.addr, c.cc)
-	//if err != nil {
-	//	return err
-	//}
-
 	timeout := 60 * time.Second
 
 	conn, err := net.DialTimeout("tcp", c.addr, timeout)
@@ -276,32 +272,20 @@ func (c *Conn) Write(b []byte) (int, error) {
 	return c.Conn.Write(b)
 }
 
+// getHostKey returns the first matched entry
 func getHostKey(host string) (ssh.PublicKey, error) {
-	file, err := os.Open(filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts"))
+	var (
+		a   addr
+		err error
+	)
+	a.host, a.port, err = net.SplitHostPort(host)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	var hostKey ssh.PublicKey
-	for scanner.Scan() {
-		fields := strings.Split(scanner.Text(), " ")
-		if len(fields) != 3 {
-			continue
-		}
-		if strings.Contains(fields[0], host) {
-			var err error
-			hostKey, _, _, _, err = ssh.ParseAuthorizedKey(scanner.Bytes())
-			if err != nil {
-				return nil, errors.New(fmt.Sprintf("error parsing %q: %v", fields[2], err))
-			}
-			break
+	for _, l := range db.lines {
+		if l.match(a) {
+			return l.knownKey.Key, nil
 		}
 	}
-
-	if hostKey == nil {
-		return nil, errors.New(fmt.Sprintf("no hostkey for %s", host))
-	}
-	return hostKey, nil
+	return nil, fmt.Errorf("have no entry for host")
 }
