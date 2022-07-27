@@ -103,10 +103,10 @@ func (n *NameSpace) Flat(ns string) [][]string {
 				cps(p.Ports).String(),
 				pss,
 				p.Path,
-				p.Flag,
 				p.StartTime,
 				p.TimeStamp,
 				fmt.Sprintf("%t", p.Suspend),
+				p.Flag,
 			}
 			top = append(top, row)
 		}
