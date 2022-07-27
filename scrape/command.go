@@ -116,6 +116,9 @@ func (c *Command) getPIDByFlag(flag string) (string, error) {
 		return "", err
 	}
 
+	log.Infof("GetPIDByFlag Run CMD: %s", cmd)
+	log.Infof("GetPIDByFlag Output: %s", output)
+
 	count, err := xstring.GetNoEmptyLineNumber(output)
 	if err != nil {
 		log.Errorf("get line number failed: %s", err.Error())
