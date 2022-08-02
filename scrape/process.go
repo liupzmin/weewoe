@@ -51,7 +51,6 @@ func (p *ProcessDetail) Start() error {
 	du := time.Duration(interval)
 
 	go p.collect(du)
-	p.running = true
 	return nil
 }
 
@@ -69,7 +68,9 @@ func (p *ProcessDetail) AddListener(l TableListener) {
 	p.Unlock()
 	log.Debug("Process Collector register!")
 
-	go l.TableDataChanged(p.Peek())
+	if p.running {
+		go l.TableDataChanged(p.Peek())
+	}
 }
 
 func (p *ProcessDetail) RemoveListener(l TableListener) {
@@ -127,9 +128,7 @@ func (p *ProcessDetail) collect(du time.Duration) {
 		case <-p.done:
 			log.Info("Process Collector: work down! I'm quitting.")
 			for _, v := range instances.Set {
-				if v.Conn.IsValid() {
-					v.Close()
-				}
+				v.Close()
 			}
 			p.done <- struct{}{}
 			return
@@ -142,6 +141,10 @@ func (p *ProcessDetail) scrape() {
 	defer pmux.RUnlock()
 	p.collectProcess()
 	p.collectPort()
+	// 第一次收集完修改状态
+	if !p.running {
+		p.running = true
+	}
 	p.fireDataChanged()
 }
 

@@ -21,3 +21,17 @@ func GetNoEmptyLineNumber(input string) (int, error) {
 	}
 	return count, nil
 }
+
+func TrimEmptyLines(b []byte) string {
+	strs := strings.Split(string(b), "\n")
+	str := ""
+	for _, s := range strs {
+		if len(strings.TrimSpace(s)) == 0 {
+			continue
+		}
+		str += s + "\n"
+	}
+	str = strings.TrimSuffix(str, "\n")
+
+	return str
+}

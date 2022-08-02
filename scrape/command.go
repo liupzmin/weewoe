@@ -57,7 +57,7 @@ func (c *Command) GetProcessStat() (*ProcessState, error) {
 
 	pid, err := c.GetPID()
 	if err != nil {
-		log.Warnf("GetPID failed: %s", err)
+		log.Errorf("GetPID failed: %s", err)
 		return bad, nil
 	}
 	log.Debugf("%s's pid is %s", c.p.Name, pid)
@@ -110,14 +110,15 @@ func (c *Command) getPIDByFlag(flag string) (string, error) {
 		return "grep " + s
 	})
 
-	cmd := fmt.Sprintf("ps -ef|%s|grep -v grep|awk '{print $2}'", strings.Join(flags, "|"))
+	//cmd := fmt.Sprintf("ps -ef|%s|grep -v grep|awk '{print $2}'", strings.Join(flags, "|"))
+	cmd := fmt.Sprintf("ps -ef|%s|grep -v grep", strings.Join(flags, "|"))
+	log.Infof("Run CMD: %s", cmd)
 	output, err := c.target.Conn.SingleRun(cmd)
 	if err != nil {
 		return "", err
 	}
-
-	log.Infof("GetPIDByFlag Run CMD: %s", cmd)
-	log.Infof("GetPIDByFlag Output: %s", output)
+	output = xstring.TrimEmptyLines([]byte(output))
+	log.Infof("Output for [%s]: %s", flag, output)
 
 	count, err := xstring.GetNoEmptyLineNumber(output)
 	if err != nil {
@@ -130,7 +131,7 @@ func (c *Command) getPIDByFlag(flag string) (string, error) {
 	}
 
 	reader := bufio.NewReader(strings.NewReader(output))
-	pid, _, err := reader.ReadLine()
+	pidStr, _, err := reader.ReadLine()
 	if err == io.EOF {
 		return "", err
 	}
@@ -138,7 +139,10 @@ func (c *Command) getPIDByFlag(flag string) (string, error) {
 		log.Errorf("read pid line failed: %s", err.Error())
 		return "", err
 	}
-	return string(pid), nil
+
+	pidSlice := strings.Fields(string(pidStr))
+
+	return pidSlice[1], nil
 }
 
 func GetBootTime(conn *ssh.Connection) (int64, error) {

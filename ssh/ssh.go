@@ -76,7 +76,7 @@ func NewConnection(addr, user string) (*Connection, error) {
 		reconnect:     make(chan error),
 	}
 
-	go conn.connect()
+	conn.connect()
 
 	return conn, nil
 }
@@ -145,7 +145,13 @@ func (c *Connection) MultipleRun(commands ...string) (string, error) {
 }
 
 func (c *Connection) Close() {
+	c.Lock()
+	defer c.Unlock()
+	if !c.valid {
+		return
+	}
 	close(c.done)
+	c.valid = false
 }
 
 func (c *Connection) connect() {

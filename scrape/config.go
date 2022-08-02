@@ -122,11 +122,8 @@ type Config struct {
 
 func Init() {
 	initConfig()
-	go func() {
-		initConnection(processInfo)
-		takeOff()
-	}()
-
+	initConnection(processInfo)
+	takeOff()
 }
 
 func initConfig() {
