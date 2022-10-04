@@ -147,12 +147,12 @@ func (n *NameSpace) Erect(rows render.Rows) {
 			Name:      v.Fields[1],
 			Host:      v.Fields[3],
 			Path:      v.Fields[6],
-			Flag:      v.Fields[7],
+			Flag:      v.Fields[10],
 			Ports:     pss,
 			State:     FromProcessStateDesc(v.Fields[2]),
-			StartTime: v.Fields[8],
-			TimeStamp: v.Fields[9],
-			Suspend:   Suspend(v.Fields[10]),
+			StartTime: v.Fields[7],
+			TimeStamp: v.Fields[8],
+			Suspend:   Suspend(v.Fields[9]),
 		}
 		g.Processes = append(g.Processes, pc)
 	}
