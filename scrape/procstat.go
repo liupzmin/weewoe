@@ -78,10 +78,8 @@ func NewProcStat(data []byte) (ProcStat, error) {
 	var (
 		ignore int
 
-		l      = bytes.Index(data, []byte("("))
-		r      = bytes.LastIndex(data, []byte(")"))
-		pid, _ = strconv.Atoi(strings.TrimSpace(string(data[:l])))
-		s      = ProcStat{PID: pid}
+		l = bytes.Index(data, []byte("("))
+		r = bytes.LastIndex(data, []byte(")"))
 	)
 
 	if l < 0 || r < 0 {
@@ -90,6 +88,9 @@ func NewProcStat(data []byte) (ProcStat, error) {
 			data,
 		)
 	}
+
+	pid, _ := strconv.Atoi(strings.TrimSpace(string(data[:l])))
+	s := ProcStat{PID: pid}
 
 	s.Comm = string(data[l+1 : r])
 	_, err := fmt.Fscan(
