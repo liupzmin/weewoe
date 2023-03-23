@@ -26,6 +26,7 @@ type ProcessDetail struct {
 	listeners []TableListener
 	re, done  chan struct{}
 	limiter   *rate.Limiter
+	sm        sync.Mutex
 	sync.RWMutex
 }
 
@@ -41,6 +42,8 @@ func NewProcessDetail() *ProcessDetail {
 }
 
 func (p *ProcessDetail) Start() error {
+	p.sm.Lock()
+	defer p.sm.Unlock()
 	if p.running {
 		return nil
 	}
@@ -51,6 +54,7 @@ func (p *ProcessDetail) Start() error {
 	du := time.Duration(interval)
 
 	go p.collect(du)
+	p.running = true
 	return nil
 }
 
@@ -141,10 +145,6 @@ func (p *ProcessDetail) scrape() {
 	defer pmux.RUnlock()
 	p.collectProcess()
 	p.collectPort()
-	// 第一次收集完修改状态
-	if !p.running {
-		p.running = true
-	}
 	p.fireDataChanged()
 }
 
