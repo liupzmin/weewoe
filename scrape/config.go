@@ -162,10 +162,14 @@ func loadProcessInfo() {
 		log.Panicf("processes not found in config file")
 	}
 
-	err := pro.Unmarshal(&processInfo)
+	var pi Config
+	err := pro.Unmarshal(&pi)
 	if err != nil {
 		log.Panicf("unable to decode into struct, %v", err)
 	}
+
+	processInfo = pi
+	log.Debugf("the process info has been loaded:%+v", processInfo)
 }
 
 func initConnection(conf Config) {
