@@ -57,7 +57,7 @@ func (c *Command) GetProcessStat() (*ProcessState, error) {
 
 	pid, err := c.GetPID()
 	if err != nil {
-		log.Errorf("GetPID failed: %s", err)
+		log.Warnf("GetPID failed: %s", err)
 		return bad, nil
 	}
 	log.Debugf("%s's pid is %s", c.p.Name, pid)

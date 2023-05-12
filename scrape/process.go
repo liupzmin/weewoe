@@ -180,6 +180,7 @@ func (p *ProcessDetail) collectProcess() {
 			p := p
 			go func() {
 				defer wg.Done()
+
 				h := strings.Split(v.Host, ":")[0]
 				p.Host = h
 
@@ -189,21 +190,24 @@ func (p *ProcessDetail) collectProcess() {
 					Timestamp: time.Now().Unix(),
 				}
 
-				t, _ := instances.GetTarget(p.GetConnectionKey(h))
+				defer appendFunc(ps)
+
+				t, ok := instances.GetTarget(p.GetConnectionKey(h))
+				if !ok {
+					return
+				}
 
 				if !t.Conn.IsValid() {
-					appendFunc(ps)
 					return
 				}
 
 				cmd := NewCommand(*t, p)
-				ps, err := cmd.GetProcessStat()
+				nps, err := cmd.GetProcessStat()
 				if err != nil {
 					log.Errorf("GetProcessStat failed: %s, process: %v", err.Error(), p)
-					appendFunc(ps)
 					return
 				}
-				appendFunc(ps)
+				ps.Clone(nps)
 			}()
 		}
 	}

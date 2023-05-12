@@ -100,6 +100,14 @@ type ProcessState struct {
 	Timestamp     int64
 }
 
+func (p *ProcessState) Clone(ps *ProcessState) {
+	p.Process = ps.Process
+	p.State = ps.State
+	p.StateDescribe = ps.StateDescribe
+	p.StartTime = ps.StartTime
+	p.Timestamp = ps.Timestamp
+}
+
 type PortState struct {
 	Process
 	States    []*Port
@@ -148,6 +156,10 @@ func initConfig() {
 		pmux.Lock()
 		defer pmux.Unlock()
 		loadProcessInfo()
+		err := ssh.RefreshKnownHosts()
+		if err != nil {
+			log.Errorf("refresh known_hosts failed: %s", err.Error())
+		}
 		initConnection(processInfo)
 	})
 	viper.WatchConfig()

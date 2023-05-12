@@ -20,9 +20,18 @@ var (
 	signer       ssh.Signer
 )
 
-func init() {
+func readKnownHosts() error {
 	var err error
 	hostCallback, db, err = New(filepath.Join(os.Getenv("HOME"), ".ssh", "known_hosts"))
+	if err != nil {
+		log.Errorf("init known host failed: %s", err)
+	}
+	return err
+}
+
+func init() {
+
+	err := readKnownHosts()
 	if err != nil {
 		log.Panicf("init known host failed: %s", err)
 	}
@@ -36,6 +45,10 @@ func init() {
 	if err != nil {
 		log.Panicf("unable to parse private key: %v", err)
 	}
+}
+
+func RefreshKnownHosts() error {
+	return readKnownHosts()
 }
 
 type Connection struct {
