@@ -70,7 +70,7 @@ func (p ProcessFactory) Stream(cat string) <-chan render.Rows {
 		for {
 			data, err := stream.Recv()
 			if err == io.EOF {
-				log.Info().Msg("End of DrainProcessState, go to Repeat!")
+				log.Info().Msg("end of DrainProcessState, go to Repeat!")
 				goto Repeat
 			}
 			if err != nil {

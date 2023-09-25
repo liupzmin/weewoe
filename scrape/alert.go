@@ -3,6 +3,10 @@ package scrape
 import (
 	"fmt"
 	"net/http"
+	"strings"
+	"time"
+
+	"github.com/liupzmin/weewoe/util/xtime"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/liupzmin/weewoe/internal/render"
@@ -27,22 +31,42 @@ type Annotations struct {
 	Description string `json:"description"`
 }
 
-type Alert struct {
-	URL string
+type timePair struct {
+	start time.Time
+	end   time.Time
 }
 
-func (a Alert) TableDataChanged(rows render.Rows) {
+type Alert struct {
+	URL              string
+	IgnoreTimeString []string
+
+	ignoreTime []timePair
+	loc        *time.Location
+}
+
+func (a *Alert) TableDataChanged(rows render.Rows) {
+	_ = a.ConvertTime(a.IgnoreTimeString)
+	now := time.Now()
+	log.Debugf("time now:%v", now)
+	for _, tp := range a.ignoreTime {
+		log.Debugf("start: %v, end: %v", tp.start, tp.end)
+		if now.After(tp.start) && now.Before(tp.end) {
+			log.Infof("shut up time！%v", a.IgnoreTimeString)
+			return
+		}
+	}
+
 	var ns NameSpace
 	ns.Erect(rows)
 	a.ProcessAlert(ns.Groups())
 	a.PortAlert(ns.Groups())
 }
 
-func (a Alert) TableLoadFailed(err error) {}
+func (a *Alert) TableLoadFailed(err error) {}
 
-func (a Alert) Chan() chan []byte { return nil }
+func (a *Alert) Chan() chan []byte { return nil }
 
-func (a Alert) ProcessAlert(data []Group) {
+func (a *Alert) ProcessAlert(data []Group) {
 	msgs := make([]Message, 0)
 	for _, v := range data {
 		for _, p := range v.Processes {
@@ -69,7 +93,7 @@ func (a Alert) ProcessAlert(data []Group) {
 	}
 }
 
-func (a Alert) PortAlert(data []Group) {
+func (a *Alert) PortAlert(data []Group) {
 	msgs := make([]Message, 0)
 	for _, g := range data {
 		for _, v := range g.Processes {
@@ -102,7 +126,7 @@ type Result struct {
 	Status string `json:"status"`
 }
 
-func (a Alert) sent(msg ...Message) {
+func (a *Alert) sent(msg ...Message) {
 	result := new(Result)
 	client := resty.New()
 	resp, err := client.R().
@@ -125,4 +149,34 @@ func (a Alert) sent(msg ...Message) {
 		log.Errorf("send alert failed: %s", result.Status)
 		return
 	}
+}
+
+func (a *Alert) ConvertTime(ts []string) error {
+	if a.loc == nil {
+		a.loc = xtime.GetUTC8Location()
+	}
+	var (
+		tps []timePair
+		now = time.Now()
+		ymd = strings.Split(now.String(), " ")[0]
+	)
+
+	for _, tp := range ts {
+		tpslice := strings.Split(tp, "-")
+		if len(tpslice) != 2 {
+			return fmt.Errorf("wrong alert ignore time config: %s", tp)
+		}
+		startTime, err := time.ParseInLocation("2006-01-02 15:04", fmt.Sprintf("%s %s", ymd, tpslice[0]), a.loc)
+		if err != nil {
+			return err
+		}
+		endTime, err := time.ParseInLocation("2006-01-02 15:04", fmt.Sprintf("%s %s", ymd, tpslice[1]), a.loc)
+		if err != nil {
+			return err
+		}
+
+		tps = append(tps, timePair{start: startTime, end: endTime})
+	}
+	a.ignoreTime = tps
+	return nil
 }

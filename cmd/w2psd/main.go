@@ -101,8 +101,16 @@ func cronSendMail() {
 
 func sendAlert() {
 	if viper.GetBool("alert.notify") {
-		alert := scrape.Alert{URL: viper.GetString("alert.url")}
-		scrape.CollectorMap["process"].AddListener(alert)
+		ignoreTime := viper.GetStringSlice("alert.ignore_time")
+		log.Debugf("The ignore time string is %v", ignoreTime)
+
+		alert := scrape.Alert{URL: viper.GetString("alert.url"), IgnoreTimeString: ignoreTime}
+		err := alert.ConvertTime(ignoreTime)
+		if err != nil {
+			log.Panicf("Parse alert.ignore_time error: %s", err)
+		}
+
+		scrape.CollectorMap["process"].AddListener(&alert)
 	}
 }
 

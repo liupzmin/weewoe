@@ -9,6 +9,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/liupzmin/weewoe/util/xtime"
+
 	"github.com/liupzmin/weewoe/internal/render"
 )
 
@@ -311,10 +313,7 @@ func (c *ProcessCache) MergeSort(pros []*ProcessState, ports []*PortState) []Gro
 			g = make(map[string]*CacheProcess, 0)
 		}
 		var st string
-		loc, err := time.LoadLocation("Asia/Shanghai")
-		if err != nil {
-			loc = time.FixedZone("CST-8", 8*3600)
-		}
+		loc := xtime.GetUTC8Location()
 		if v.StartTime > 0 {
 			st = time.Unix(v.StartTime, 0).In(loc).Format(TimeLayout)
 		}

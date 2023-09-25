@@ -5,6 +5,8 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/liupzmin/weewoe/util/xtime"
+
 	"github.com/liupzmin/weewoe/internal/render"
 	"k8s.io/apimachinery/pkg/util/duration"
 )
@@ -71,10 +73,7 @@ func toAgeHuman(s string) string {
 }
 
 func toAgeHumanFromTimeStamp(t string) string {
-	loc, err := time.LoadLocation("Asia/Shanghai")
-	if err != nil {
-		loc = time.FixedZone("CST-8", 8*3600)
-	}
+	loc := xtime.GetUTC8Location()
 	b, err := time.ParseInLocation(TimeLayout, t, loc)
 	if err != nil {
 		return ""
