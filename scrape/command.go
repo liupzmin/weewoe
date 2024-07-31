@@ -17,6 +17,8 @@ import (
 	ssh2 "golang.org/x/crypto/ssh"
 )
 
+const MaxRetries = 5
+
 type Command struct {
 	target Target
 	p      Process
@@ -31,7 +33,7 @@ func NewCommand(t Target, p Process) *Command {
 
 func (c *Command) GetPID() (string, error) {
 	if c.p.Flag == "" && c.p.PIDFile == "" {
-		return "", fmt.Errorf("you have to specify either pidfile or flag")
+		return "", fmt.Errorf("you have to specify either pidfile or flag for %s", c.p.Name)
 	}
 	if c.p.PIDFile != "" {
 		return c.getPIDByFile(c.p.PIDFile)
@@ -51,13 +53,13 @@ func (c *Command) GetProcessStat() (*ProcessState, error) {
 
 	btime, err := GetBootTime(c.target.Conn)
 	if err != nil {
-		log.Warnf("GetBootTime error: %s", err)
+		log.Warnf("GetBootTime failed for %s, error: %s", c.target.Conn.Addr(), err)
 		return bad, nil
 	}
 
 	pid, err := c.GetPID()
 	if err != nil {
-		log.Warnf("GetPID failed: %s", err)
+		log.Warnf("GetPID failed for %s, error: %s", c.p.Name, err)
 		return bad, nil
 	}
 	log.Debugf("%s's pid is %s", c.p.Name, pid)
@@ -92,20 +94,28 @@ func (c *Command) GetProcessStat() (*ProcessState, error) {
 	}, nil
 }
 
-func (c *Command) getPIDByFile(file string) (string, error) {
+func (c *Command) getPIDByFile(file string) (out string, err error) {
 	cmd := fmt.Sprintf("cat %s", file)
-	pid, err := c.target.Conn.SingleRun(cmd)
-	if err != nil {
-		return "", err
+
+	for i := 0; i < MaxRetries; i++ {
+		out, err = c.target.Conn.SingleRun(cmd)
+		if err == nil {
+			return
+		}
+		time.Sleep(1 * time.Second)
 	}
 
-	if pid == "" {
+	if err != nil {
+		return "", fmt.Errorf("%s : %s", err, out)
+	}
+
+	if out == "" {
 		return "", fmt.Errorf("pid file is empty")
 	}
-	return pid, nil
+	return out, nil
 }
 
-func (c *Command) getPIDByFlag(flag string) (string, error) {
+func (c *Command) getPIDByFlag(flag string) (output string, err error) {
 	flags := xmap.Map(strings.Split(flag, ","), func(s string) string {
 		return "grep " + s
 	})
@@ -113,8 +123,16 @@ func (c *Command) getPIDByFlag(flag string) (string, error) {
 	//cmd := fmt.Sprintf("ps -ef|%s|grep -v grep|awk '{print $2}'", strings.Join(flags, "|"))
 	cmd := fmt.Sprintf("ps -ef|%s|grep -v grep", strings.Join(flags, "|"))
 	log.Infof("Run CMD: %s", cmd)
-	output, err := c.target.Conn.SingleRun(cmd)
+	for i := 0; i < MaxRetries; i++ {
+		output, err = c.target.Conn.SingleRun(cmd)
+		if err == nil {
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
+
 	if err != nil {
+		log.Errorf("Get Failed for CMD [%s], error: %s", cmd, err)
 		return "", err
 	}
 	output = xstring.TrimEmptyLines([]byte(output))

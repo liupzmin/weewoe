@@ -261,6 +261,10 @@ func (c *Connection) keepAlive() {
 	}
 }
 
+func (c *Connection) Addr() string {
+	return fmt.Sprintf("%s:%s", c.user, c.addr)
+}
+
 // Conn wraps a net.Conn, and sets a deadline for every read
 // and write operation.
 type Conn struct {
