@@ -69,6 +69,12 @@ flag = "solr.jetty.https.port=8983"
 group = "jssb"
 ```
 
+`w2psd` looks for a configuration file named `w2psd.toml` in the following locations, in order of precedence:
+
+- /etc/weewoe/
+- The current working directory `./`
+- The `weewoe` directory under the user's home directory（`$HOME/weewoe/`）
+
 ## start|stop
 
 ```shell
@@ -79,5 +85,6 @@ nohup /usr/local/bin/w2psd > check.log 2>&1 &
 kill $(ps -ef | grep w2psd | grep -v grep | awk '{print $2}')
 ```
 
+## run w2ctl
 
-
+If `w2psd` is deployed locally, you can run `w2ctl` directly. Otherwise, specify the server IP with `w2ctl -s <w2psd IP>`.
