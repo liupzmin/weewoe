@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright Authors of weewoe
+
 package scrape
 
 import "github.com/liupzmin/weewoe/log"

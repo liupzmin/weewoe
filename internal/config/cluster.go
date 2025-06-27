@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright Authors of K9s
+
 package config
 
 // DefaultPFAddress specifies the default PortForward host address.
