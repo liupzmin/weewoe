@@ -52,7 +52,7 @@ host = "192.168.1.9:22"
 osuser = "app"
 name = "Report"
 path = "/home/app/Report"
-pidfile = "/home/app/Report/bin/com.afis.hfp.report.ReportServer.pid"
+pidfile = "/home/app/Report/bin/com.report.ReportServer.pid"
 ports = [55051]
 group = "broker"
 ```
