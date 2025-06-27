@@ -4,13 +4,13 @@
 
 **weewoe** borrows the terminal UI from [k9s](https://github.com/derailed/k9s), and is designed to monitor legacy software that does not support health probe interfaces. The backend service, **w2psd**, monitors background processes and ports via SSH, and sends alerts to **[Alertmanager](https://github.com/prometheus/alertmanager)** when processes crash or ports become unreachable. The command-line tool **w2ctl** communicates with **w2psd** using gRPC.
 
-1. ### Features:
+### Features:
 
-   1. Continuously monitors the liveness of processes and ports
-   2. Notifies Alertmanager when abnormal conditions are detected.
-   3. Periodically emails process status reports
+1. Continuously monitors the liveness of processes and ports
+2. Notifies Alertmanager when abnormal conditions are detected.
+3. Periodically emails process status reports
 
-<video src="assets/weewoe.mp4"></video>
+![](assets/weewoe.gif)
 
 ---
 
